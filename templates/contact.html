@@ -28,6 +28,10 @@
           <p class="success-label">Gracias</p>
           <h3>Tu solicitud ha sido recibida.</h3>
           <p>Hemos registrado tu información y nuestro equipo la revisará pronto.</p>
+          <p>Si deseas comunicarte de inmediato, puedes continuar por WhatsApp con el mensaje ya preparado.</p>
+          <a href="{{ whatsapp_url }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+            Continuar en WhatsApp
+          </a>
         </div>
       {% else %}
         <form method="post" novalidate class="contact-form" id="contactForm">

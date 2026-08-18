@@ -1,10 +1,33 @@
 from datetime import timedelta
+from urllib.parse import quote
 
 from django.shortcuts import render
 from django.utils import timezone
 
 from .forms import ContactForm
 from .models import Lead
+
+WHATSAPP_NUMBER = '3117195100'
+
+
+def build_whatsapp_message(lead):
+    lines = [
+        'Hola, vengo del sitio web de JJ Construmadera.',
+        f'Mi nombre es {lead.name}.',
+        f'Mi teléfono es {lead.phone}.',
+        f'Mi correo es {lead.email}.',
+    ]
+
+    if lead.address:
+        lines.append(f'Mi dirección es {lead.address}.')
+
+    lines.extend(['', 'Mensaje:', lead.message])
+    return '\n'.join(lines)
+
+
+def build_whatsapp_url(lead):
+    message = build_whatsapp_message(lead)
+    return f'https://wa.me/{WHATSAPP_NUMBER}?text={quote(message)}'
 
 
 def home(request):
@@ -66,12 +89,14 @@ def contact(request):
                 lead = Lead.objects.create(**payload, status='nuevo')
                 success = True
                 form = ContactForm()
+                whatsapp_url = build_whatsapp_url(lead)
                 return render(request, 'contact.html', {
                     'site_name': 'JJ Construmadera',
                     'page_title': 'Contacto',
                     'form': form,
                     'success': success,
                     'lead': lead,
+                    'whatsapp_url': whatsapp_url,
                 })
 
     return render(request, 'contact.html', {
