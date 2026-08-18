@@ -33,6 +33,41 @@ class ContentAdminModelsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn('/admin/login/', response.url)
 
+    def test_contact_form_valid_submission(self):
+        response = self.client.post(
+            reverse('contact'),
+            {
+                'name': 'Ana Gómez',
+                'phone': '3001234567',
+                'email': 'ana@example.com',
+                'address': 'Calle 12 # 34-56',
+                'message': 'Necesito información para un closet a medida.',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Gracias')
+        self.assertEqual(Lead.objects.count(), 1)
+
+    def test_contact_form_requires_fields(self):
+        response = self.client.post(reverse('contact'), {})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Este campo es obligatorio')
+
+    def test_contact_form_invalid_email(self):
+        response = self.client.post(
+            reverse('contact'),
+            {
+                'name': 'Ana Gómez',
+                'phone': '3001234567',
+                'email': 'email-invalido',
+                'message': 'Necesito información.'
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Introduce un correo electrónico válido')
+
     def test_portfolio_project_crud(self):
         image = SimpleUploadedFile('project.png', b'fake-image', content_type='image/png')
         project = PortfolioProject.objects.create(

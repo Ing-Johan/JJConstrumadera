@@ -23,27 +23,77 @@
     </div>
 
     <div class="contact-card form-card">
-      <form>
-        <div class="field-row">
-          <label>
-            <span>Nombre</span>
-            <input type="text" placeholder="Tu nombre" />
-          </label>
+      {% if success and lead %}
+        <div class="form-success" role="status" aria-live="polite">
+          <p class="success-label">Gracias</p>
+          <h3>Tu solicitud ha sido recibida.</h3>
+          <p>Hemos registrado tu información y nuestro equipo la revisará pronto.</p>
         </div>
-        <div class="field-row">
-          <label>
-            <span>Email</span>
-            <input type="email" placeholder="tucorreo@email.com" />
-          </label>
-        </div>
-        <div class="field-row">
-          <label>
-            <span>Proyecto</span>
-            <textarea rows="5" placeholder="Cuéntanos sobre tu proyecto"></textarea>
-          </label>
-        </div>
-        <button type="button" class="btn btn-primary">Enviar mensaje</button>
-      </form>
+      {% else %}
+        <form method="post" novalidate class="contact-form" id="contactForm">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="form-errors" role="alert">
+              {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="field-row">
+            <label for="id_name">
+              <span>Nombre *</span>
+              {{ form.name }}
+            </label>
+            {% if form.name.errors %}
+              <div class="field-error">{{ form.name.errors|join:', ' }}</div>
+            {% endif %}
+          </div>
+
+          <div class="field-row">
+            <label for="id_phone">
+              <span>Teléfono *</span>
+              {{ form.phone }}
+            </label>
+            {% if form.phone.errors %}
+              <div class="field-error">{{ form.phone.errors|join:', ' }}</div>
+            {% endif %}
+          </div>
+
+          <div class="field-row">
+            <label for="id_email">
+              <span>Email *</span>
+              {{ form.email }}
+            </label>
+            {% if form.email.errors %}
+              <div class="field-error">{{ form.email.errors|join:', ' }}</div>
+            {% endif %}
+          </div>
+
+          <div class="field-row">
+            <label for="id_address">
+              <span>Dirección</span>
+              {{ form.address }}
+            </label>
+            {% if form.address.errors %}
+              <div class="field-error">{{ form.address.errors|join:', ' }}</div>
+            {% endif %}
+          </div>
+
+          <div class="field-row">
+            <label for="id_message">
+              <span>Mensaje *</span>
+              {{ form.message }}
+            </label>
+            {% if form.message.errors %}
+              <div class="field-error">{{ form.message.errors|join:', ' }}</div>
+            {% endif %}
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-submit">Enviar mensaje</button>
+        </form>
+      {% endif %}
     </div>
   </div>
 </section>
