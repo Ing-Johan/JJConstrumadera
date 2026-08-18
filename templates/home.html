@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ site_name }} | Proyecto base</title>
+    <meta name="description" content="Página inicial temporal de JJ Construmadera Web." />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+  </head>
+  <body>
+    <main class="container">
+      <p class="eyebrow">JJ Construmadera SAS</p>
+      <h1>Proyecto base en Django</h1>
+      <p class="lead">
+        Este es un punto de inicio temporal para comprobar que la plataforma está funcionando correctamente.
+      </p>
+      <div class="box">
+        <p>Estado: configuración inicial correcta</p>
+        <p>Próxima etapa: diseño y contenidos reales de la marca</p>
+      </div>
+    </main>
+    <script src="{% static 'js/main.js' %}"></script>
+  </body>
+</html>
