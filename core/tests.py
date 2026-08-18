@@ -1,5 +1,8 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+
+from core.models import Lead, PortfolioImage, PortfolioProject, Service, SiteContent
 
 
 class PublicPagesTests(TestCase):
@@ -22,3 +25,74 @@ class PublicPagesTests(TestCase):
     def test_contact_page_loads(self):
         response = self.client.get(reverse('contact'))
         self.assertEqual(response.status_code, 200)
+
+
+class ContentAdminModelsTests(TestCase):
+    def test_admin_requires_login(self):
+        response = self.client.get('/admin/')
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/admin/login/', response.url)
+
+    def test_portfolio_project_crud(self):
+        image = SimpleUploadedFile('project.png', b'fake-image', content_type='image/png')
+        project = PortfolioProject.objects.create(
+            name='Cocina modular',
+            description='Diseño funcional para vivienda moderna.',
+            category='Residencial',
+            image=image,
+            is_active=True,
+        )
+        PortfolioImage.objects.create(project=project, image=image)
+
+        self.assertEqual(PortfolioProject.objects.count(), 1)
+        project.description = 'Nueva descripción'
+        project.save()
+        self.assertEqual(project.description, 'Nueva descripción')
+
+        project.is_active = False
+        project.save()
+        self.assertFalse(project.is_active)
+
+        project.delete()
+        self.assertEqual(PortfolioProject.objects.count(), 0)
+
+    def test_service_and_site_content_creation(self):
+        image = SimpleUploadedFile('service.png', b'fake-image', content_type='image/png')
+        service = Service.objects.create(
+            name='Closets a medida',
+            description='Solución de almacenamiento personalizada.',
+            image=image,
+            is_active=True,
+        )
+        content = SiteContent.objects.create(
+            slug='hero-title',
+            title='Soluciones a medida para espacios que marcan la diferencia.',
+            body='Texto principal para la sección de inicio.',
+            is_active=True,
+        )
+
+        self.assertEqual(Service.objects.count(), 1)
+        self.assertEqual(SiteContent.objects.count(), 1)
+        self.assertEqual(service.name, 'Closets a medida')
+        self.assertEqual(content.slug, 'hero-title')
+
+    def test_lead_crud(self):
+        lead = Lead.objects.create(
+            name='Ana Gómez',
+            phone='3001234567',
+            email='ana@example.com',
+            address='Calle 12 # 34-56',
+            message='Necesito una cotización para un closet.',
+            status='nuevo',
+        )
+
+        self.assertEqual(Lead.objects.count(), 1)
+        self.assertEqual(lead.status, 'nuevo')
+
+        lead.status = 'contactado'
+        lead.admin_notes = 'Se programó llamada.'
+        lead.save()
+        self.assertEqual(lead.status, 'contactado')
+
+        lead.delete()
+        self.assertEqual(Lead.objects.count(), 0)
