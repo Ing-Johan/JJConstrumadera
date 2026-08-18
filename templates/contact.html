@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | Contacto{% endblock %}
+
+{% block content %}
+<section class="page-hero section">
+  <div class="container narrow">
+    <p class="eyebrow">Contacto</p>
+    <h1>Hablemos sobre tu proyecto.</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container contact-grid">
+    <div class="contact-card">
+      <h2>Solicita una cotización</h2>
+      <p>Comparte tus necesidades y te responderemos con la mejor orientación para tu proyecto.</p>
+      <ul class="contact-list">
+        <li><strong>Email:</strong> contacto@jjconstrumadera.com</li>
+        <li><strong>Teléfono:</strong> +57 (000) 000 0000</li>
+        <li><strong>Ubicación:</strong> Colombia</li>
+      </ul>
+    </div>
+
+    <div class="contact-card form-card">
+      <form>
+        <div class="field-row">
+          <label>
+            <span>Nombre</span>
+            <input type="text" placeholder="Tu nombre" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label>
+            <span>Email</span>
+            <input type="email" placeholder="tucorreo@email.com" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label>
+            <span>Proyecto</span>
+            <textarea rows="5" placeholder="Cuéntanos sobre tu proyecto"></textarea>
+          </label>
+        </div>
+        <button type="button" class="btn btn-primary">Enviar mensaje</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

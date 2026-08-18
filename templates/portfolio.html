@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | Portafolio{% endblock %}
+
+{% block content %}
+<section class="page-hero section">
+  <div class="container narrow">
+    <p class="eyebrow">Portafolio</p>
+    <h1>Experiencias pensadas para vivir mejor.</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container card-grid three-col">
+    <article class="project-card project-card-one large-project">
+      <div class="project-image"></div>
+      <div class="project-info">
+        <h3>Proyecto residencial</h3>
+        <p>Solución integral en madera para una vivienda con estilo contemporáneo.</p>
+      </div>
+    </article>
+    <article class="project-card project-card-two large-project">
+      <div class="project-image"></div>
+      <div class="project-info">
+        <h3>Construcción y remodelación</h3>
+        <p>Actualización funcional y estética para espacios multifuncionales.</p>
+      </div>
+    </article>
+    <article class="project-card project-card-three large-project">
+      <div class="project-image"></div>
+      <div class="project-info">
+        <h3>Espacios comerciales</h3>
+        <p>Diseños que aportan orden, identidad y valor percibido al negocio.</p>
+      </div>
+    </article>
+  </div>
+</section>
+{% endblock %}

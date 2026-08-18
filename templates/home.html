@@ -1,25 +1,124 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ site_name }} | Proyecto base</title>
-    <meta name="description" content="Página inicial temporal de JJ Construmadera Web." />
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-  </head>
-  <body>
-    <main class="container">
-      <p class="eyebrow">JJ Construmadera SAS</p>
-      <h1>Proyecto base en Django</h1>
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | Inicio{% endblock %}
+
+{% block content %}
+<section class="hero section">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">Carpintería y mobiliario</p>
+      <h1>Soluciones a medida para espacios que marcan la diferencia.</h1>
       <p class="lead">
-        Este es un punto de inicio temporal para comprobar que la plataforma está funcionando correctamente.
+        En JJ Construmadera SAS creamos ambientes funcionales y elegantes con acabados de calidad,
+        atención cercana y ejecución responsable.
       </p>
-      <div class="box">
-        <p>Estado: configuración inicial correcta</p>
-        <p>Próxima etapa: diseño y contenidos reales de la marca</p>
+      <div class="cta-group">
+        <a href="{% url 'contact' %}" class="btn btn-primary">Solicitar cotización</a>
+        <a href="{% url 'services' %}" class="btn btn-secondary">Ver servicios</a>
       </div>
-    </main>
-    <script src="{% static 'js/main.js' %}"></script>
-  </body>
-</html>
+      <ul class="hero-points">
+        <li>Diseño práctico</li>
+        <li>Calidad en acabados</li>
+        <li>Atención personalizada</li>
+      </ul>
+    </div>
+
+    <div class="hero-visual" aria-label="Vista de obra en madera y acabados">
+      <div class="visual-card large-card">
+        <span class="label">Proyecto residencial</span>
+        <strong>Estilo moderno</strong>
+      </div>
+      <div class="visual-card small-card">
+        <span>+15 años</span>
+        <strong>de experiencia</strong>
+      </div>
+      <div class="visual-card accent-card">
+        <span>Calidad</span>
+        <strong>confiable</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section muted-section">
+  <div class="container">
+    <div class="section-heading center">
+      <p class="eyebrow">Especializados</p>
+      <h2>Trabajos pensados para cada necesidad</h2>
+    </div>
+
+    <div class="card-grid three-col">
+      <article class="info-card">
+        <span class="card-icon">01</span>
+        <h3>Carpintería</h3>
+        <p>Soluciones de madera para interiores, muebles y detalles personalizados.</p>
+      </article>
+      <article class="info-card">
+        <span class="card-icon">02</span>
+        <h3>Mobiliario</h3>
+        <p>Diseños funcionales que optimizan espacios y mejoran la experiencia del entorno.</p>
+      </article>
+      <article class="info-card">
+        <span class="card-icon">03</span>
+        <h3>Acabados</h3>
+        <p>Determinantes en la presentación final de cada proyecto y cada ambiente.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split-layout">
+    <div>
+      <p class="eyebrow">Nuestra forma de trabajar</p>
+      <h2>Enfoque claro, ejecución ordenada y resultados sólidos.</h2>
+    </div>
+    <div class="text-stack">
+      <p>
+        Desde la primera conversación entendemos las necesidades del cliente, proponemos una solución
+        práctica y avanzamos con criterio en cada etapa del proceso.
+      </p>
+      <p>
+        La combinación entre experiencia, materiales adecuados y rigor en la ejecución nos permite
+        entregar proyectos con un equilibrio entre funcionalidad y estética.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section muted-section">
+  <div class="container">
+    <div class="section-heading wrap">
+      <div>
+        <p class="eyebrow">Portafolio</p>
+        <h2>Proyectos que reflejan cuidado y detalle</h2>
+      </div>
+      <a href="{% url 'portfolio' %}" class="text-link">Ver proyectos</a>
+    </div>
+
+    <div class="card-grid three-col project-grid">
+      <article class="project-card project-card-one">
+        <div class="project-image"></div>
+        <div class="project-info">
+          <h3>Closets personalizados</h3>
+          <p>Soluciones con orden, materiales resistentes y acabado premium.</p>
+        </div>
+      </article>
+      <article class="project-card project-card-two">
+        <div class="project-image"></div>
+        <div class="project-info">
+          <h3>Rehabilitaciones</h3>
+          <p>Actualización funcional y estética para espacios cotidianos.</p>
+        </div>
+      </article>
+      <article class="project-card project-card-three">
+        <div class="project-image"></div>
+        <div class="project-info">
+          <h3>Mobiliario a medida</h3>
+          <p>Elementos que se adaptan a la medida exacta del proyecto.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+{% endblock %}
