@@ -1,5 +1,6 @@
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from core.models import Lead, PortfolioImage, PortfolioProject, Service, SiteContent
@@ -84,6 +85,33 @@ class ContentAdminModelsTests(TestCase):
         self.assertContains(response, 'wa.me/3117195100')
         self.assertContains(response, 'Mi%20nombre%20es%20Ana%20G%C3%B3mez')
         self.assertContains(response, 'Necesito%20informaci%C3%B3n%20para%20un%20closet%20a%20medida.')
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        ADMIN_EMAIL='admin@jjconstrumadera.com',
+        DEFAULT_FROM_EMAIL='no-reply@jjconstrumadera.com',
+    )
+    def test_contact_form_sends_admin_notification_email(self):
+        response = self.client.post(
+            reverse('contact'),
+            {
+                'name': 'Ana Gómez',
+                'phone': '3001234567',
+                'email': 'ana@example.com',
+                'address': 'Calle 12 # 34-56',
+                'message': 'Necesito información para un closet a medida.',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.to, ['admin@jjconstrumadera.com'])
+        self.assertIn('Nuevo contacto', email.subject)
+        self.assertIn('Ana Gómez', email.body)
+        self.assertIn('3001234567', email.body)
+        self.assertIn('ana@example.com', email.body)
+        self.assertIn('Necesito información para un closet a medida.', email.body)
 
     def test_portfolio_project_crud(self):
         image = SimpleUploadedFile('project.png', b'fake-image', content_type='image/png')

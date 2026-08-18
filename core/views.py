@@ -1,6 +1,8 @@
 from datetime import timedelta
 from urllib.parse import quote
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -28,6 +30,24 @@ def build_whatsapp_message(lead):
 def build_whatsapp_url(lead):
     message = build_whatsapp_message(lead)
     return f'https://wa.me/{WHATSAPP_NUMBER}?text={quote(message)}'
+
+
+def build_admin_notification_message(lead):
+    sent_at = timezone.localtime(lead.created_at).strftime('%d/%m/%Y %H:%M:%S')
+    lines = [
+        'Nuevo contacto en JJ Construmadera',
+        f'Fecha y hora: {sent_at}',
+        '',
+        f'Nombre: {lead.name}',
+        f'Teléfono: {lead.phone}',
+        f'Email: {lead.email}',
+    ]
+
+    if lead.address:
+        lines.append(f'Dirección: {lead.address}')
+
+    lines.extend(['', 'Mensaje:', lead.message])
+    return '\n'.join(lines)
 
 
 def home(request):
@@ -87,6 +107,16 @@ def contact(request):
                 form.add_error(None, duplicate_message)
             else:
                 lead = Lead.objects.create(**payload, status='nuevo')
+                admin_email = getattr(settings, 'ADMIN_EMAIL', None)
+                if admin_email:
+                    send_mail(
+                        subject='Nuevo contacto - JJ Construmadera',
+                        message=build_admin_notification_message(lead),
+                        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@localhost'),
+                        recipient_list=[admin_email],
+                        fail_silently=False,
+                    )
+
                 success = True
                 form = ContactForm()
                 whatsapp_url = build_whatsapp_url(lead)
