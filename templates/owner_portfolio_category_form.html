@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | {{ title }}{% endblock %}
+
+{% block content %}
+<section class="section owner-dashboard-shell">
+  <div class="container small-container">
+    <div class="page-header owner-header">
+      <div>
+        <p class="eyebrow">Portafolio</p>
+        <h1>{{ title }}</h1>
+      </div>
+      <a href="{% url 'owner_portfolio_list' %}" class="btn btn-secondary">Volver</a>
+    </div>
+
+    <div class="panel-card">
+      <form method="post" class="owner-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Guardar categoría</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

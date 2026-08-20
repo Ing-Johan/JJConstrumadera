@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | Panel propietario{% endblock %}
+
+{% block content %}
+<section class="section owner-dashboard-shell">
+  <div class="container">
+    <div class="page-header owner-header">
+      <div>
+        <p class="eyebrow">Panel propietario</p>
+        <h1>JJ Construmadera</h1>
+      </div>
+      <a href="{% url 'owner_logout' %}" class="btn btn-secondary">Cerrar sesión</a>
+    </div>
+
+    <div class="analytics-grid">
+      <div class="metric-card accent">
+        <span class="metric-label">Visitas totales</span>
+        <strong>{{ total_visits }}</strong>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Visitas hoy</span>
+        <strong>{{ visits_today }}</strong>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Visitas semana</span>
+        <strong>{{ visits_week }}</strong>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Visitas mes</span>
+        <strong>{{ visits_month }}</strong>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Leads nuevos</span>
+        <strong>{{ leads_new }}</strong>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Leads contactados</span>
+        <strong>{{ leads_contacted }}</strong>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Leads cerrados</span>
+        <strong>{{ leads_closed }}</strong>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Leads recibidos</span>
+        <strong>{{ leads_total }}</strong>
+      </div>
+    </div>
+
+    <div class="analytics-panels modern-panels">
+      <div class="panel-card chart-card">
+        <div class="panel-header">
+          <h2>Dispositivos</h2>
+          <span>Usuarios</span>
+        </div>
+        <div class="device-ring-wrap">
+          <div class="ring-chart mobile" style="--percent: {{ device_share.mobile }}; --ring-color: #d97706;">
+            <div class="ring-inner">
+              <strong>{{ device_breakdown.mobile }}</strong>
+              <span>Móvil</span>
+            </div>
+          </div>
+          <div class="ring-chart tablet" style="--percent: {{ device_share.tablet }}; --ring-color: #756350;">
+            <div class="ring-inner">
+              <strong>{{ device_breakdown.tablet }}</strong>
+              <span>Tablet</span>
+            </div>
+          </div>
+          <div class="ring-chart pc" style="--percent: {{ device_share.pc }}; --ring-color: #1f1f1f;">
+            <div class="ring-inner">
+              <strong>{{ device_breakdown.pc }}</strong>
+              <span>PC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card chart-card">
+        <div class="panel-header">
+          <h2>Leads por estado</h2>
+          <span>Resumen</span>
+        </div>
+        <div class="status-list">
+          {% for key, value in status_breakdown.items %}
+            <div class="status-row">
+              <div class="status-label">
+                <span class="status-dot {% if key == 'nuevo' %}new{% elif key == 'contactado' %}contacted{% else %}closed{% endif %}"></span>
+                <span>{{ key|title }}</span>
+              </div>
+              <strong>{{ value }}</strong>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-panels modern-panels">
+      <div class="panel-card chart-card">
+        <div class="panel-header">
+          <h2>Páginas más visitadas</h2>
+          <span>Contenido</span>
+        </div>
+        <div class="bar-list">
+          {% for page in top_pages %}
+            <div class="bar-row">
+              <div class="bar-meta">
+                <span>{{ page.path }}</span>
+                <strong>{{ page.total }}</strong>
+              </div>
+              <div class="bar-track">
+                <span class="bar-fill" style="width: {% widthratio page.total max_page_visits 100 %}%"></span>
+              </div>
+            </div>
+          {% empty %}
+            <p>No hay visitas registradas todavía.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="panel-card chart-card">
+        <div class="panel-header">
+          <h2>Últimos leads</h2>
+          <span>Seguimiento</span>
+        </div>
+        <div class="mini-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for lead in recent_leads %}
+                <tr>
+                  <td>{{ lead.name }}</td>
+                  <td>{{ lead.get_status_display }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="2">No hay leads.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-card admin-links-panel">
+      <div class="panel-header">
+        <h2>Gestión rápida</h2>
+        <span>CRUDs</span>
+      </div>
+      <div class="admin-links-grid">
+        {% for item in admin_links %}
+          <a class="admin-link-card" href="{{ item.url }}" target="_blank" rel="noopener noreferrer">
+            <span>{{ item.label }}</span>
+            <strong>Administrar</strong>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

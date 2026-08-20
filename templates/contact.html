@@ -16,9 +16,9 @@
       <h2>Solicita una cotización</h2>
       <p>Comparte tus necesidades y te responderemos con la mejor orientación para tu proyecto.</p>
       <ul class="contact-list">
-        <li><strong>Email:</strong> contacto@jjconstrumadera.com</li>
-        <li><strong>Teléfono:</strong> +57 (000) 000 0000</li>
-        <li><strong>Ubicación:</strong> Colombia</li>
+        <li><strong>Email:</strong> construmadera2018@gmail.com</li>
+        <li><strong>Teléfono:</strong> +57 3117195100</li>
+        <li><strong>Ubicación:</strong> Montería - Córdoba, Colombia</li>
       </ul>
     </div>
 
@@ -28,11 +28,31 @@
           <p class="success-label">Gracias</p>
           <h3>Tu solicitud ha sido recibida.</h3>
           <p>Hemos registrado tu información y nuestro equipo la revisará pronto.</p>
-          <p>Si deseas comunicarte de inmediato, puedes continuar por WhatsApp con el mensaje ya preparado.</p>
-          <a href="{{ whatsapp_url }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+          <p>Serás redirigido directamente a WhatsApp para que tu solicitud sea atendida inmediatamente.</p>
+          <a id="whatsappFallback" href="{{ whatsapp_url }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
             Continuar en WhatsApp
           </a>
         </div>
+
+        <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            const whatsappUrl = "{{ whatsapp_url|escapejs }}";
+            try {
+              const popup = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+              if (!popup) {
+                const fallback = document.getElementById('whatsappFallback');
+                if (fallback) {
+                  fallback.style.display = 'inline-flex';
+                }
+              }
+            } catch (error) {
+              const fallback = document.getElementById('whatsappFallback');
+              if (fallback) {
+                fallback.style.display = 'inline-flex';
+              }
+            }
+          });
+        </script>
       {% else %}
         <form method="post" novalidate class="contact-form" id="contactForm">
           {% csrf_token %}
@@ -98,6 +118,33 @@
           <button type="submit" class="btn btn-primary btn-submit">Enviar mensaje</button>
         </form>
       {% endif %}
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="contact-card map-card">
+      <div class="panel-header">
+        <h2>Encuéntranos</h2>
+        <span>Ubicación</span>
+      </div>
+      <p><strong>JJ Construmadera S.A.S</strong><br></p>
+      <div class="map-frame-wrap">
+        <iframe
+          src="{{ map_embed_url }}"
+          width="100%"
+          height="320"
+          style="border:0;"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Mapa de JJ Construmadera S.A.S">
+        </iframe>
+      </div>
+      <div class="map-actions">
+        <a href="{{ map_directions_url }}" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+          Abrir en Google Maps
+        </a>
+      </div>
     </div>
   </div>
 </section>

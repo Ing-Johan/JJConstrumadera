@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | Portafolio{% endblock %}
+
+{% block content %}
+<section class="section owner-dashboard-shell">
+  <div class="container">
+    <div class="page-header owner-header">
+      <div>
+        <p class="eyebrow">Panel propietario</p>
+        <h1>Gestionar Portafolio</h1>
+      </div>
+      <div class="cta-group">
+        <a href="{% url 'owner_portfolio_create' %}" class="btn btn-primary">Nuevo proyecto</a>
+        <a href="{% url 'owner_portfolio_category_create' %}" class="btn btn-secondary">Nueva categoría</a>
+        <a href="{% url 'owner_dashboard' %}" class="btn btn-secondary">Volver</a>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-header">
+        <h2>Categorías</h2>
+        <span>{{ categories|length }} activas</span>
+      </div>
+      <div class="portfolio-tabs owner-tabs">
+        {% for category in categories %}
+          <a href="?category={{ category.slug }}" class="portfolio-tab {% if selected_category and selected_category.slug == category.slug %}active{% endif %}">
+            {{ category.name }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if selected_category %}
+      <div class="panel-card" style="margin-top:1.5rem;">
+        <div class="panel-header">
+          <h2>{{ selected_category.name }}</h2>
+          <div class="button-row">
+            <a href="{% url 'owner_portfolio_category_update' selected_category.pk %}" class="btn btn-secondary">Editar categoría</a>
+            <a href="{% url 'owner_portfolio_category_delete' selected_category.pk %}" class="btn btn-secondary danger-button" onclick="return confirm('¿Eliminar esta categoría y mover sus proyectos a la categoría predeterminada?')">Eliminar categoría</a>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="card-grid three-col" style="margin-top:1.5rem;">
+      {% for project in projects %}
+        <article class="info-card">
+          {% if project.image %}
+            <img src="{{ project.image.url }}" alt="{{ project.name }}" class="owner-thumb" />
+          {% endif %}
+          <span class="project-category">{{ project.category }}</span>
+          <h3>{{ project.name }}</h3>
+          <p>{{ project.description|truncatechars:140 }}</p>
+          <div class="button-row">
+            <a href="{% url 'owner_portfolio_update' project.id %}" class="btn btn-secondary">Editar</a>
+            <a href="{% url 'owner_portfolio_images' project.id %}" class="btn btn-secondary">Imágenes</a>
+            <a href="{% url 'owner_portfolio_delete' project.id %}" class="btn btn-secondary danger-button" onclick="return confirm('¿Eliminar este proyecto?')">Eliminar</a>
+          </div>
+        </article>
+      {% empty %}
+        <p>No hay proyectos creados todavía.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

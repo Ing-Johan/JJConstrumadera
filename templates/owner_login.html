@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Acceso propietario | {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="section owner-auth-section">
+  <div class="container auth-shell">
+    <div class="auth-card">
+      <div class="auth-brand" aria-label="JJ Construmadera">
+        <span class="brand-mark">JJ</span>
+        <div class="brand-copy">
+          <strong>JJ Construmadera</strong>
+          <small>SAS</small>
+        </div>
+      </div>
+
+      <p class="eyebrow">Panel propietario</p>
+      <h1>Iniciar sesión</h1>
+      <p class="auth-lead">Accede a tus estadísticas, leads y gestión del negocio.</p>
+
+      {% if form.errors %}
+        <div class="form-errors" role="alert">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" class="owner-form">
+        {% csrf_token %}
+
+        <div class="field-row">
+          <label for="id_username">
+            <span>Usuario</span>
+            {{ form.username }}
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label for="id_password">
+            <span>Contraseña</span>
+            {{ form.password }}
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary full-width">Entrar</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

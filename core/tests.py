@@ -1,9 +1,10 @@
+from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from core.models import Lead, PortfolioImage, PortfolioProject, Service, SiteContent
+from core.models import Lead, PageVisit, PortfolioCategory, PortfolioImage, PortfolioProject, Service, SiteContent
 
 
 class PublicPagesTests(TestCase):
@@ -46,8 +47,8 @@ class ContentAdminModelsTests(TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Gracias')
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('wa.me/3117195100', response.url)
         self.assertEqual(Lead.objects.count(), 1)
 
     def test_contact_form_requires_fields(self):
@@ -81,17 +82,17 @@ class ContentAdminModelsTests(TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'wa.me/3117195100')
-        self.assertContains(response, 'Mi%20nombre%20es%20Ana%20G%C3%B3mez')
-        self.assertContains(response, 'Necesito%20informaci%C3%B3n%20para%20un%20closet%20a%20medida.')
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('wa.me/3117195100', response.url)
+        self.assertIn('Mi%20nombre%20es%20Ana%20G%C3%B3mez', response.url)
+        self.assertIn('Necesito%20informaci%C3%B3n%20para%20un%20closet%20a%20medida.', response.url)
 
     @override_settings(
         EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
         ADMIN_EMAIL='admin@jjconstrumadera.com',
         DEFAULT_FROM_EMAIL='no-reply@jjconstrumadera.com',
     )
-    def test_contact_form_sends_admin_notification_email(self):
+    def test_contact_form_does_not_send_admin_notification_email(self):
         response = self.client.post(
             reverse('contact'),
             {
@@ -103,15 +104,100 @@ class ContentAdminModelsTests(TestCase):
             },
         )
 
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('wa.me/3117195100', response.url)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_admin_analytics_dashboard(self):
+        PageVisit.objects.create(path='/', device_type='pc')
+        PageVisit.objects.create(path='/', device_type='mobile')
+        PageVisit.objects.create(path='/servicios/', device_type='mobile')
+        Lead.objects.create(
+            name='Ana Gómez',
+            phone='3001234567',
+            email='ana@example.com',
+            address='Calle 12 # 34-56',
+            message='Necesito información.',
+            status='nuevo',
+        )
+        Lead.objects.create(
+            name='Pedro Ruiz',
+            phone='3012345678',
+            email='pedro@example.com',
+            address='Carrera 4',
+            message='Otra solicitud.',
+            status='contactado',
+        )
+        Lead.objects.create(
+            name='Luisa Gómez',
+            phone='3023456789',
+            email='luisa@example.com',
+            address='Avenida 9',
+            message='Necesito presupuesto.',
+            status='cerrado',
+        )
+
+        user = get_user_model().objects.create_user(
+            username='adminuser',
+            email='admin@example.com',
+            password='secret123',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse('admin_analytics'))
+
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(mail.outbox), 1)
-        email = mail.outbox[0]
-        self.assertEqual(email.to, ['admin@jjconstrumadera.com'])
-        self.assertIn('Nuevo contacto', email.subject)
-        self.assertIn('Ana Gómez', email.body)
-        self.assertIn('3001234567', email.body)
-        self.assertIn('ana@example.com', email.body)
-        self.assertIn('Necesito información para un closet a medida.', email.body)
+        self.assertContains(response, 'Visitas totales')
+        self.assertContains(response, 'Leads nuevos')
+        self.assertContains(response, 'Leads contactados')
+        self.assertContains(response, 'Leads cerrados')
+        self.assertContains(response, '3')
+
+    def test_owner_login_page_loads(self):
+        response = self.client.get(reverse('owner_login'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Iniciar sesión')
+
+    def test_owner_dashboard_requires_staff(self):
+        user = get_user_model().objects.create_user(
+            username='regularuser',
+            email='regular@example.com',
+            password='secret123',
+            is_staff=False,
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse('owner_dashboard'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_owner_custom_editor_dashboard_uses_own_routes(self):
+        user = get_user_model().objects.create_user(
+            username='ownereditor',
+            email='owner@example.com',
+            password='secret123',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse('owner_content_dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Editar sitio')
+        self.assertNotContains(response, '/admin/')
+
+    def test_owner_portfolio_management_page_loads(self):
+        user = get_user_model().objects.create_user(
+            username='portfoliomanager',
+            email='portfolio@example.com',
+            password='secret123',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse('owner_portfolio_list'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Portafolio')
 
     def test_portfolio_project_crud(self):
         image = SimpleUploadedFile('project.png', b'fake-image', content_type='image/png')
@@ -155,6 +241,57 @@ class ContentAdminModelsTests(TestCase):
         self.assertEqual(SiteContent.objects.count(), 1)
         self.assertEqual(service.name, 'Closets a medida')
         self.assertEqual(content.slug, 'hero-title')
+
+    def test_portfolio_categories_are_managed_with_custom_panel(self):
+        user = get_user_model().objects.create_user(
+            username='portfoliocategorymanager',
+            email='category@example.com',
+            password='secret123',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(user)
+        PortfolioCategory.objects.create(name='Cocinas', slug='cocinas', sort_order=1)
+
+        response = self.client.get(reverse('owner_portfolio_list'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Cocinas')
+        self.assertNotContains(response, '/admin/')
+
+    def test_public_portfolio_uses_categories_and_projects(self):
+        category = PortfolioCategory.objects.create(name='Cocinas', slug='cocinas', sort_order=1)
+        PortfolioProject.objects.create(
+            name='Cocina moderna',
+            description='Diseño premium para vivienda.',
+            category=category.name,
+            image=None,
+            is_active=True,
+        )
+
+        response = self.client.get(reverse('portfolio'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Cocinas')
+        self.assertContains(response, 'Cocina moderna')
+
+    def test_public_portfolio_project_detail_shows_images(self):
+        category = PortfolioCategory.objects.create(name='Cocinas', slug='cocinas', sort_order=1)
+        project = PortfolioProject.objects.create(
+            name='Cocina moderna',
+            description='Diseño premium para vivienda.',
+            category=category.name,
+            image=None,
+            is_active=True,
+        )
+        image = SimpleUploadedFile('gallery.png', b'fake-image', content_type='image/png')
+        PortfolioImage.objects.create(project=project, image=image, caption='Isla central', sort_order=1)
+
+        response = self.client.get(reverse('portfolio_detail', args=[project.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Cocina moderna')
+        self.assertContains(response, 'Isla central')
 
     def test_lead_crud(self):
         lead = Lead.objects.create(

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Lead, PortfolioImage, PortfolioProject, Service, SiteContent
+from .models import Lead, PageVisit, PortfolioImage, PortfolioProject, Service, SiteContent
 
 
 class PortfolioImageInline(admin.TabularInline):
@@ -50,3 +50,12 @@ class LeadAdmin(admin.ModelAdmin):
             'fields': ('created_at', 'updated_at')
         }),
     )
+
+
+@admin.register(PageVisit)
+class PageVisitAdmin(admin.ModelAdmin):
+    list_display = ('path', 'device_type', 'session_key', 'created_at')
+    list_filter = ('device_type', 'created_at')
+    search_fields = ('path', 'session_key')
+    readonly_fields = ('path', 'device_type', 'session_key', 'created_at')
+    ordering = ('-created_at',)

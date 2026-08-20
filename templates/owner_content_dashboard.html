@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | Gestión de contenido{% endblock %}
+
+{% block content %}
+<section class="section owner-dashboard-shell">
+  <div class="container">
+    <div class="page-header owner-header">
+      <div>
+        <p class="eyebrow">Panel propietario</p>
+        <h1>Editar sitio</h1>
+      </div>
+      <div class="cta-group">
+        <a href="{% url 'owner_dashboard' %}" class="btn btn-secondary">Volver al panel</a>
+        <a href="{% url 'owner_logout' %}" class="btn btn-secondary">Cerrar sesión</a>
+      </div>
+    </div>
+
+    <div class="card-grid three-col">
+      {% for section in sections %}
+        <article class="info-card">
+          <span class="card-icon">{{ forloop.counter }}</span>
+          <h3>{{ section.label }}</h3>
+          <p>Actualiza textos, imágenes y bloques clave de esta sección.</p>
+          <a href="{{ section.url }}" class="btn btn-primary">Editar sección</a>
+        </article>
+      {% empty %}
+        <p>No hay secciones disponibles para editar.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

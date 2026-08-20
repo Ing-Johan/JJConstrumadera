@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | {{ section_label }}{% endblock %}
+
+{% block content %}
+<section class="section owner-dashboard-shell">
+  <div class="container">
+    <div class="page-header owner-header">
+      <div>
+        <p class="eyebrow">Contenido</p>
+        <h1>{{ section_label }}</h1>
+      </div>
+      <div class="cta-group">
+        <a href="{% url 'owner_content_dashboard' %}" class="btn btn-secondary">Volver</a>
+        <a href="{% url 'owner_dashboard' %}" class="btn btn-secondary">Panel</a>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      {% for entry in entries %}
+        <div class="owner-form-block">
+          <h3>{{ entry.label }}</h3>
+          <form method="post" enctype="multipart/form-data" class="owner-form">
+            {% csrf_token %}
+            {{ entry.form.as_p }}
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

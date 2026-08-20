@@ -3,6 +3,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const nav = document.querySelector('.main-nav');
   const year = document.getElementById('year');
   const contactForm = document.getElementById('contactForm');
+  const brandOwner = document.querySelector('.brand-click-owner');
+
+  if (brandOwner) {
+    let ownerClicks = 0;
+    let ownerClickTimer = null;
+
+    brandOwner.addEventListener('click', (event) => {
+      event.preventDefault();
+      ownerClicks += 1;
+
+      if (ownerClickTimer) {
+        clearTimeout(ownerClickTimer);
+      }
+
+      ownerClickTimer = setTimeout(() => {
+        if (ownerClicks >= 4) {
+          window.location.href = '/owner/login/';
+        } else {
+          window.location.href = brandOwner.getAttribute('href');
+        }
+        ownerClicks = 0;
+      }, 500);
+    });
+  }
 
   if (year) {
     year.textContent = new Date().getFullYear();

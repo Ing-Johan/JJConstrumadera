@@ -37,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.AnalyticsMiddleware',
 ]
 
 ROOT_URLCONF = 'construmadera_web.urls'
@@ -94,9 +95,51 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / os.getenv('MEDIA_ROOT', 'media')
+
+# Almacenamiento de archivos.
+# 'default' = archivos multimedia subidos desde el panel (local o S3 según USE_S3).
+# 'staticfiles' = archivos estáticos (se mantiene el manejo actual, no se suben a S3).
+USE_S3 = os.getenv('USE_S3', 'False').lower() in {'1', 'true', 'yes', 'on'}
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        'OPTIONS': {
+            'location': MEDIA_ROOT,
+            'base_url': MEDIA_URL,
+        },
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
+
+if USE_S3:
+    STORAGES['default'] = {
+        'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
+        'OPTIONS': {
+            'access_key': os.getenv('AWS_ACCESS_KEY_ID'),
+            'secret_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
+            'bucket_name': os.getenv('AWS_STORAGE_BUCKET_NAME'),
+            'endpoint_url': os.getenv('AWS_S3_ENDPOINT_URL') or None,
+            'region_name': os.getenv('AWS_S3_REGION_NAME'),
+            # Opcional: dominio público del bucket/CDN (ej. custom domain de R2).
+            'custom_domain': os.getenv('AWS_S3_CUSTOM_DOMAIN') or None,
+            # URLs limpias (sin firma) porque los objetos son públicos.
+            'querystring_auth': False,
+            # Evita sobrescribir colisiones; genera sufijos como el almacenamiento local.
+            'file_overwrite': False,
+        },
+    }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+WHATSAPP_BUSINESS_NUMBER = os.getenv('WHATSAPP_BUSINESS_NUMBER', '3117195100').strip()
+CONTACT_MAP_QUERY = os.getenv(
+    'CONTACT_MAP_QUERY',
+    'JJ Construmadera S.A.S, Cl 22 #30b1, Montería, Córdoba',
+).strip()
 
 EMAIL_BACKEND = os.getenv(
     'EMAIL_BACKEND',

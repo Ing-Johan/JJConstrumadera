@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | Imágenes del proyecto{% endblock %}
+
+{% block content %}
+<section class="section owner-dashboard-shell">
+  <div class="container">
+    <div class="page-header owner-header">
+      <div>
+        <p class="eyebrow">Portafolio</p>
+        <h1>{{ project.name }}</h1>
+      </div>
+      <a href="{% url 'owner_portfolio_list' %}" class="btn btn-secondary">Volver</a>
+    </div>
+
+    <div class="panel-card">
+      <h3>Agregar imagen</h3>
+      <form method="post" enctype="multipart/form-data" class="owner-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Subir imagen</button>
+      </form>
+    </div>
+
+    <div class="card-grid three-col" style="margin-top:1.5rem;">
+      {% for image in images %}
+        <article class="info-card">
+          {% if image.thumb_image %}
+            <img src="{{ image.thumb_image.url }}" alt="{{ image.caption|default:project.name }}" class="owner-thumb" />
+          {% else %}
+            <img src="{{ image.image.url }}" alt="{{ image.caption|default:project.name }}" class="owner-thumb" />
+          {% endif %}
+          <p>{{ image.caption|default:'Imagen del proyecto' }}</p>
+          <p class="meta-note">Orden: {{ image.sort_order|default:0 }}</p>
+          <div class="button-row">
+            <a href="{% url 'owner_portfolio_image_update' project.id image.id %}" class="btn btn-secondary">Editar</a>
+            <a href="{% url 'owner_portfolio_image_delete' project.id image.id %}" class="btn btn-secondary danger-button" onclick="return confirm('¿Eliminar esta imagen?')">Eliminar</a>
+          </div>
+        </article>
+      {% empty %}
+        <p>No hay imágenes cargadas para este proyecto.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | Leads{% endblock %}
+
+{% block content %}
+<section class="section owner-dashboard-shell">
+  <div class="container">
+    <div class="page-header owner-header">
+      <div>
+        <p class="eyebrow">Panel propietario</p>
+        <h1>Leads y solicitudes</h1>
+      </div>
+      <div class="cta-group">
+        <a href="{% url 'owner_dashboard' %}" class="btn btn-secondary">Volver al panel</a>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <form method="get" class="owner-form owner-inline-form">
+        <div class="field-row">
+          <label for="q"><span>Buscar</span><input id="q" name="q" type="text" value="{{ search }}" placeholder="Nombre, email o teléfono"></label>
+        </div>
+        <div class="field-row">
+          <label for="status"><span>Estado</span>
+            <select id="status" name="status">
+              <option value="">Todos</option>
+              {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+      </form>
+    </div>
+
+    <div class="panel-card" style="margin-top:1.5rem;">
+      <div class="mini-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Contacto</th>
+              <th>Mensaje</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lead in leads %}
+              <tr>
+                <td>{{ lead.name }}</td>
+                <td>{{ lead.phone }}<br>{{ lead.email }}</td>
+                <td>{{ lead.message|truncatechars:120 }}</td>
+                <td>
+                  <form method="post" action="{% url 'owner_lead_update_status' lead.id %}">
+                    {% csrf_token %}
+                    <select name="status">
+                      {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if lead.status == value %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-secondary btn-small">Guardar</button>
+                  </form>
+                </td>
+                <td>{{ lead.get_status_display }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">No hay leads registrados.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ site_name }} | {{ project.name }}{% endblock %}
+
+{% block content %}
+<section class="page-hero section">
+  <div class="container narrow">
+    <p class="eyebrow">Portafolio</p>
+    <h1>{{ project.name }}</h1>
+    <p class="project-category">{{ category }}</p>
+    <p>{{ project.description }}</p>
+    <a href="{% url 'portfolio' %}" class="btn btn-secondary">Volver al portafolio</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% if images %}
+      <div class="gallery-grid">
+        {% for image in images %}
+          <figure class="gallery-item">
+            {% if image.optimized_image %}
+              <img src="{{ image.optimized_image.url }}" alt="{{ image.caption|default:project.name }}" class="gallery-image" />
+            {% elif image.image %}
+              <img src="{{ image.image.url }}" alt="{{ image.caption|default:project.name }}" class="gallery-image" />
+            {% endif %}
+            {% if image.caption %}
+              <figcaption>{{ image.caption }}</figcaption>
+            {% endif %}
+          </figure>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="panel-card">
+        <p>Aún no hay imágenes asociadas a este proyecto.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
