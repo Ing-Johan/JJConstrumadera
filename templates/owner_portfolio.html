@@ -35,10 +35,12 @@
       <div class="panel-card" style="margin-top:1.5rem;">
         <div class="panel-header">
           <h2>{{ selected_category.name }}</h2>
-          <div class="button-row">
-            <a href="{% url 'owner_portfolio_category_update' selected_category.pk %}" class="btn btn-secondary">Editar categoría</a>
-            <a href="{% url 'owner_portfolio_category_delete' selected_category.pk %}" class="btn btn-secondary danger-button" onclick="return confirm('¿Eliminar esta categoría y mover sus proyectos a la categoría predeterminada?')">Eliminar categoría</a>
-          </div>
+          {% if selected_category.pk %}
+            <div class="button-row">
+              <a href="{% url 'owner_portfolio_category_update' selected_category.pk %}" class="btn btn-secondary">Editar categoría</a>
+              <a href="{% url 'owner_portfolio_category_delete' selected_category.pk %}" class="btn btn-secondary danger-button" onclick="return confirm('¿Eliminar esta categoría y mover sus proyectos a la categoría predeterminada?')">Eliminar categoría</a>
+            </div>
+          {% endif %}
         </div>
       </div>
     {% endif %}

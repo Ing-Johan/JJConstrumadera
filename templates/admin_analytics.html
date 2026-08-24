@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ site_name }} | Panel propietario{% endblock %}
 
@@ -8,7 +9,7 @@
     <div class="page-header owner-header">
       <div>
         <p class="eyebrow">Panel propietario</p>
-        <h1>JJ Construmadera</h1>
+        <h1><img src="{% static 'images/logo-entero.png' %}" alt="JJ Construmadera SAS" class="owner-logo" /></h1>
       </div>
       <a href="{% url 'owner_logout' %}" class="btn btn-secondary">Cerrar sesión</a>
     </div>

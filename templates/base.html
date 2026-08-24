@@ -9,18 +9,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="{% static 'images/logo-em.png' %}" />
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
   </head>
   <body>
     <header class="site-header">
       <div class="container nav-wrap">
-        <a href="{% url 'home' %}" class="brand brand-click-owner" aria-label="Inicio">
-          <span class="brand-mark">JJ</span>
-          <span class="brand-copy">
-            <strong>JJ Construmadera</strong>
-            <small>SAS</small>
-          </span>
+        <a  href="{% url 'home' %}" class="brand brand-click-owner" aria-label="JJ Construmadera SAS - Inicio">
+          <img style="width: 140px; height: 70px;" src="{% static 'images/logo-entero.png' %}" alt="JJ Construmadera SAS" class="brand-logo" />
         </a>
+        <p style="font-size: 30px; margin-top: 20px;"><strong>JJ construmadera SAS</strong></p>
 
         <button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false">
           <span></span>
@@ -43,39 +41,41 @@
     </main>
 
     <footer class="site-footer">
-      <div class="container footer-grid">
-        <div>
-          <a href="{% url 'home' %}" class="brand footer-brand" aria-label="Inicio">
-            <span class="brand-mark">JJ</span>
-            <span class="brand-copy">
-              <strong>JJ Construmadera</strong>
-              <small>SAS</small>
-            </span>
-          </a>
-          <p>Soluciones en carpintería, mobiliario y acabados para proyectos modernos.</p>
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-col footer-brand-col">
+            <a href="{% url 'home' %}" class="brand footer-brand" aria-label="JJ Construmadera SAS - Inicio">
+              <img src="{% static 'images/logo-entero.png' %}" alt="JJ Construmadera SAS" class="brand-logo footer-logo" />
+            </a><p><strong>JJ construmadera SAS</strong></p>
+            <p class="footer-tagline">Carpintería, mobiliario y acabados</p>
+            <a href="{% url 'contact' %}" class="btn btn-primary footer-cta">Solicitar cotización</a>
+          </div>
+
+          <nav class="footer-col" aria-label="Navegación">
+            <h3>Navegación</h3>
+            <ul>
+              <li><a href="{% url 'home' %}">Inicio</a></li>
+              <li><a href="{% url 'services' %}">Servicios</a></li>
+              <li><a href="{% url 'portfolio' %}">Portafolio</a></li>
+              <li><a href="{% url 'about' %}">Nosotros</a></li>
+              <li><a href="{% url 'contact' %}">Contacto</a></li>
+            </ul>
+          </nav>
+
+          <div class="footer-col">
+            <h3>Contacto</h3>
+            <ul>
+              <li><a href="{{ footer_phone_href }}">{{ footer_phone }}</a></li>
+              <li><a href="{{ footer_whatsapp_url }}" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+              <li><a href="{{ footer_maps_url }}" target="_blank" rel="noopener noreferrer">{{ footer_location_short }}</a></li>
+              <li><a href="{% url 'contact' %}">Solicitar información</a></li>
+            </ul>
+          </div>
         </div>
 
-        <div>
-          <h3>Navegación</h3>
-          <ul>
-            <li><a href="{% url 'home' %}">Inicio</a></li>
-            <li><a href="{% url 'services' %}">Servicios</a></li>
-            <li><a href="{% url 'portfolio' %}">Portafolio</a></li>
-            <li><a href="{% url 'about' %}">Nosotros</a></li>
-          </ul>
+        <div class="footer-bottom">
+          <span>© JJ Construmadera SAS  desde 2018</span>
         </div>
-
-        <div>
-          <h3>Contacto</h3>
-          <ul>
-            <li><a href="{% url 'contact' %}">Solicitar cotización</a></li>
-            <li><span>Atención personalizada</span></li>
-            <li><span>Colombia</span></li>
-          </ul>
-        </div>
-      </div>
-      <div class="container footer-bottom">
-        <span>© <span id="year"></span> JJ Construmadera SAS</span>
       </div>
     </footer>
 

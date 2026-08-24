@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
@@ -19,6 +20,16 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+# Security settings for production (when DEBUG=False)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -31,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -52,6 +64,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.footer_contact',
             ],
         },
     },
@@ -59,12 +72,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'construmadera_web.wsgi.application'
 
-if os.getenv('USE_SQLITE', 'True').lower() in {'1', 'true', 'yes', 'on'}:
+# Database configuration
+# USE_SQLITE=True -> SQLite (desarrollo local)
+# USE_SQLITE=False + DATABASE_URL -> PostgreSQL (producción Render)
+# USE_SQLITE=False + DB_* variables -> PostgreSQL (manual)
+use_sqlite = os.getenv('USE_SQLITE', 'True').lower() in {'1', 'true', 'yes', 'on'}
+database_url = os.getenv('DATABASE_URL', '').strip()
+
+if use_sqlite:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
+    }
+elif database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            database_url,
+            conn_max_age=60,
+            conn_health_checks=True,
+        )
     }
 else:
     DATABASES = {
@@ -98,9 +126,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / os.getenv('MEDIA_ROOT', 'media')
 
 # Almacenamiento de archivos.
-# 'default' = archivos multimedia subidos desde el panel (local o S3 según USE_S3).
-# 'staticfiles' = archivos estáticos (se mantiene el manejo actual, no se suben a S3).
-USE_S3 = os.getenv('USE_S3', 'False').lower() in {'1', 'true', 'yes', 'on'}
+# 'default' = archivos multimedia subidos desde el panel (local o Cloudinary según USE_CLOUDINARY).
+# 'staticfiles' = archivos estáticos (WhiteNoise en producción, Django en desarrollo).
+USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False').lower() in {'1', 'true', 'yes', 'on'}
 
 STORAGES = {
     'default': {
@@ -111,27 +139,31 @@ STORAGES = {
         },
     },
     'staticfiles': {
-        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
 
-if USE_S3:
+if USE_CLOUDINARY:
+    import cloudinary
+
+    cloudinary.config(
+        cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+        api_key=os.getenv('CLOUDINARY_API_KEY'),
+        api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+        secure=True,
+    )
+    # Backend oficial de Cloudinary para Django. Solo se configura con USE_CLOUDINARY=True
+    # porque al importarse exige las credenciales CLOUDINARY_* (falla sin ellas en dev).
     STORAGES['default'] = {
-        'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
-        'OPTIONS': {
-            'access_key': os.getenv('AWS_ACCESS_KEY_ID'),
-            'secret_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
-            'bucket_name': os.getenv('AWS_STORAGE_BUCKET_NAME'),
-            'endpoint_url': os.getenv('AWS_S3_ENDPOINT_URL') or None,
-            'region_name': os.getenv('AWS_S3_REGION_NAME'),
-            # Opcional: dominio público del bucket/CDN (ej. custom domain de R2).
-            'custom_domain': os.getenv('AWS_S3_CUSTOM_DOMAIN') or None,
-            # URLs limpias (sin firma) porque los objetos son públicos.
-            'querystring_auth': False,
-            # Evita sobrescribir colisiones; genera sufijos como el almacenamiento local.
-            'file_overwrite': False,
-        },
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
     }
+
+# CSRF trusted origins para producción (configurable por variable de entorno)
+csrf_trusted_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '').strip()
+if csrf_trusted_origins:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_origins.split(',') if origin.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = []
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

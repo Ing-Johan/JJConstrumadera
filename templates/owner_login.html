@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Acceso propietario | {{ site_name }}{% endblock %}
 
@@ -6,12 +7,8 @@
 <section class="section owner-auth-section">
   <div class="container auth-shell">
     <div class="auth-card">
-      <div class="auth-brand" aria-label="JJ Construmadera">
-        <span class="brand-mark">JJ</span>
-        <div class="brand-copy">
-          <strong>JJ Construmadera</strong>
-          <small>SAS</small>
-        </div>
+      <div class="auth-brand" aria-label="JJ Construmadera SAS">
+        <img src="{% static 'images/logo-entero.png' %}" alt="JJ Construmadera SAS" class="auth-logo" />
       </div>
 
       <p class="eyebrow">Panel propietario</p>
