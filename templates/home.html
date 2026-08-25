@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load core_extras %}
 
 {% block title %}{{ site_name }} | Inicio{% endblock %}
 
@@ -6,8 +8,8 @@
 <section class="hero section">
   <div class="container hero-grid">
     <div class="hero-copy">
-      <p class="eyebrow">Carpintería y mobiliario</p>
-      <h1>Soluciones a medida para espacios que marcan la diferencia.</h1>
+      <p class="eyebrow">Carpintería</p>
+      <h1>No solo estamos construyendo, creamos.</h1>
       <p class="lead">
         En JJ Construmadera SAS creamos ambientes funcionales y elegantes con acabados de calidad,
         atención cercana y ejecución responsable.
@@ -23,19 +25,10 @@
       </ul>
     </div>
 
-    <div class="hero-visual" aria-label="Vista de obra en madera y acabados">
-      <div class="visual-card large-card">
-        <span class="label">Proyecto residencial</span>
-        <strong>Estilo moderno</strong>
-      </div>
-      <div class="visual-card small-card">
-        <span>+15 años</span>
-        <strong>de experiencia</strong>
-      </div>
-      <div class="visual-card accent-card">
-        <span>Calidad</span>
-        <strong>confiable</strong>
-      </div>
+    <div class="hero-visual" aria-label="JJ Construmadera SAS">
+      <figure class="hero-image-wrapper logo-hero-large">
+        <img src="{% static 'images/logo-entero.png' %}" alt="JJ Construmadera SAS" class="hero-image" />
+      </figure>
     </div>
   </div>
 </section>
@@ -49,17 +42,32 @@
 
     <div class="card-grid three-col">
       <article class="info-card">
-        <span class="card-icon">01</span>
+        <span class="card-icon icon-carpentry" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
         <h3>Carpintería</h3>
         <p>Soluciones de madera para interiores, muebles y detalles personalizados.</p>
       </article>
       <article class="info-card">
-        <span class="card-icon">02</span>
+        <span class="card-icon icon-furniture" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M20 6H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 10v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="4" x2="12" y2="20" stroke-linecap="round"/>
+          </svg>
+        </span>
         <h3>Mobiliario</h3>
         <p>Diseños funcionales que optimizan espacios y mejoran la experiencia del entorno.</p>
       </article>
       <article class="info-card">
-        <span class="card-icon">03</span>
+        <span class="card-icon icon-finish" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 6v6l4 2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
         <h3>Acabados</h3>
         <p>Determinantes en la presentación final de cada proyecto y cada ambiente.</p>
       </article>
@@ -97,27 +105,41 @@
     </div>
 
     <div class="card-grid three-col project-grid">
-      <article class="project-card project-card-one">
-        <div class="project-image"></div>
-        <div class="project-info">
-          <h3>Closets personalizados</h3>
-          <p>Soluciones con orden, materiales resistentes y acabado premium.</p>
-        </div>
-      </article>
-      <article class="project-card project-card-two">
-        <div class="project-image"></div>
-        <div class="project-info">
-          <h3>Rehabilitaciones</h3>
-          <p>Actualización funcional y estética para espacios cotidianos.</p>
-        </div>
-      </article>
-      <article class="project-card project-card-three">
-        <div class="project-image"></div>
-        <div class="project-info">
-          <h3>Mobiliario a medida</h3>
-          <p>Elementos que se adaptan a la medida exacta del proyecto.</p>
-        </div>
-      </article>
+      {% for cat_name in category_order %}
+        {% with project=category_projects|get_item:cat_name %}
+          <article class="project-card {% cycle 'project-card-one' 'project-card-two' 'project-card-three' %}">
+            {% if project %}
+              <a href="{% url 'portfolio_detail' project.id %}" class="project-card-link">
+                {% if cat_name == 'Muebles y Closets' and project.images.count >= 2 %}
+                  <div class="project-image-collage">
+                    {% for img in project.images.all|slice:":2" %}
+                      {% if img.image %}
+                        <img src="{{ img.image.url }}" alt="{{ img.caption|default:project.name }}" class="collage-image" />
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% elif project.image %}
+                  <img src="{{ project.image.url }}" alt="{{ project.name }}" class="project-image" />
+                {% elif project.images.first.image %}
+                  <img src="{{ project.images.first.image.url }}" alt="{{ project.name }}" class="project-image" />
+                {% else %}
+                  <div class="project-image placeholder-image"></div>
+                {% endif %}
+                <div class="project-info">
+                  <span class="project-category">{{ project.category }}</span>
+                  <h3>{{ project.name }}</h3>
+                </div>
+              </a>
+            {% else %}
+              <div class="project-image placeholder-image"></div>
+              <div class="project-info">
+                <span class="project-category">{{ cat_name }}</span>
+                <h3>{{ cat_name }}</h3>
+              </div>
+            {% endif %}
+          </article>
+        {% endwith %}
+      {% endfor %}
     </div>
   </div>
 </section>

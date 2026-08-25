@@ -291,7 +291,9 @@ class ContentAdminModelsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Cocina moderna')
-        self.assertContains(response, 'Isla central')
+        self.assertContains(response, 'Cocinas')
+        # Caption no se muestra en la galería por diseño
+        self.assertNotContains(response, 'Isla central')
 
     def test_lead_crud(self):
         lead = Lead.objects.create(

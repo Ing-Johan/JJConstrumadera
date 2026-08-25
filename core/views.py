@@ -545,7 +545,22 @@ def owner_logout(request):
 
 def home(request):
     service_list = Service.objects.filter(is_active=True).order_by('name')[:3]
-    project_list = PortfolioProject.objects.filter(is_active=True).order_by('-created_at')[:3]
+    
+    # Obtener proyectos hero específicos para las 3 cards del home
+    hero_puertas = PortfolioProject.objects.filter(name='Hero Puertas', is_active=True, image__isnull=False).exclude(image='').first()
+    hero_cocinas = PortfolioProject.objects.filter(name='Hero Cocinas', is_active=True, image__isnull=False).exclude(image='').first()
+    hero_muebles = PortfolioProject.objects.filter(name='Hero Muebles y Closets', is_active=True, image__isnull=False).exclude(image='').first()
+    
+    category_projects = {}
+    if hero_puertas:
+        category_projects['Puertas'] = hero_puertas
+    if hero_cocinas:
+        category_projects['Cocinas'] = hero_cocinas
+    if hero_muebles:
+        category_projects['Muebles y Closets'] = hero_muebles
+    
+    category_order = ['Puertas', 'Cocinas', 'Muebles y Closets']
+    
     hero_title = get_site_content_value('home_hero_title', 'Soluciones a medida para espacios que marcan la diferencia.')
     hero_subtitle = get_site_content_value('home_hero_subtitle', 'En JJ Construmadera SAS creamos ambientes funcionales y elegantes con acabados de calidad, atención cercana y ejecución responsable.')
     cta_primary = get_site_content_value('home_cta_primary', 'Solicitar cotización')
@@ -558,7 +573,8 @@ def home(request):
         'cta_primary': cta_primary,
         'cta_secondary': cta_secondary,
         'services': service_list,
-        'projects': project_list,
+        'category_projects': category_projects,
+        'category_order': category_order,
     })
 
 

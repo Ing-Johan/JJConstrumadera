@@ -35,9 +35,12 @@ class ContactForm(forms.ModelForm):
         widget=forms.EmailInput(attrs={'placeholder': 'correo@ejemplo.com', 'required': True}),
     )
     address = forms.CharField(
-        required=False,
-        max_length=200,
-        widget=forms.TextInput(attrs={'placeholder': 'Tu dirección (opcional)'}),
+        required=True,
+        error_messages={
+        'required': 'Este campo es obligatorio.',
+        },
+        max_length=500,
+        widget=forms.TextInput(attrs={'placeholder': 'Desde que ciudad nos escribes', 'required': True}),
     )
     message = forms.CharField(
         required=True,

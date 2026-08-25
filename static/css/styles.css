@@ -658,6 +658,16 @@ select {
   padding-bottom: 1.75rem;
 }
 
+@media (max-width: 767px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .footer-brand-col {
+    grid-column: 1 / -1;
+  }
+}
+
 .site-footer p,
 .site-footer span,
 .site-footer li,
@@ -1224,5 +1234,149 @@ select {
 
   .analytics-panels {
     grid-template-columns: 1.2fr 1fr;
+  }
+}
+
+/* Hero image wrapper */
+.hero-image-wrapper {
+  position: relative;
+  border-radius: var(--radius-large);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  background: linear-gradient(145deg, #1f1f1f, #3a2a1d);
+}
+
+.hero-image-wrapper img.hero-image {
+  width: 100%;
+  height: 100%;
+  min-height: clamp(280px, 50vh, 420px);
+  object-fit: cover;
+  display: block;
+}
+
+.hero-image-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(20,20,20,0.95), transparent);
+  color: #fff;
+}
+
+.hero-image-caption .label {
+  display: block;
+  font-size: clamp(0.65rem, 1.2vw, 0.72rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 0.3rem;
+}
+
+.hero-image-caption strong {
+  font-size: clamp(1.3rem, 2.5vw, 2rem);
+  font-weight: 700;
+}
+
+/* Logo hero variant - large card size */
+.hero-image-wrapper.logo-hero-large {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius-large);
+  overflow: hidden;
+  min-height: clamp(200px, 35vw, 250px);
+}
+
+.hero-image-wrapper.logo-hero-large img.hero-image {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: clamp(250px, 45vh, 350px);
+  min-height: clamp(250px, 45vh, 350px);
+  object-fit: contain;
+  filter: drop-shadow(0 20px 40px rgba(20, 20, 20, 0.15));
+}
+
+/* Project image collage for Muebles y Closets */
+.project-image-collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  background: #f7f4f1;
+}
+
+.project-image-collage .collage-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .project-image-collage {
+    grid-template-columns: 1fr;
+    aspect-ratio: 8 / 3;
+  }
+}
+
+/* SVG Icons */
+.card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: rgba(217, 119, 6, 0.12);
+  color: var(--color-accent);
+  font-weight: 800;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.card-icon svg {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
+.icon-carpentry svg { stroke: var(--color-accent); }
+.icon-furniture svg { stroke: var(--color-accent); }
+.icon-finish svg { stroke: var(--color-accent); }
+.icon-kitchen svg { stroke: var(--color-accent); }
+.icon-closet svg { stroke: var(--color-accent); }
+.icon-door svg { stroke: var(--color-accent); }
+.icon-remodel svg { stroke: var(--color-accent); }
+.icon-finish-deco svg { stroke: var(--color-accent); }
+.icon-custom svg { stroke: var(--color-accent); }
+
+.icon-attention svg { stroke: var(--color-accent); }
+.icon-quality svg { stroke: var(--color-accent); }
+.icon-responsibility svg { stroke: var(--color-accent); }
+
+/* About value cards */
+.value-card .card-icon {
+  background: rgba(217, 119, 6, 0.12);
+}
+
+@media (max-width: 767px) {
+  .hero-visual {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .large-card {
+    grid-column: auto;
+  }
+
+  .hero-image-wrapper img.hero-image {
+    min-height: clamp(200px, 40vh, 300px);
   }
 }
