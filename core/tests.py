@@ -315,3 +315,127 @@ class ContentAdminModelsTests(TestCase):
 
         lead.delete()
         self.assertEqual(Lead.objects.count(), 0)
+
+
+class OwnerSecurityTests(TestCase):
+    """Tests de seguridad para el panel Owner."""
+
+    def setUp(self):
+        self.owner_user = get_user_model().objects.create_user(
+            username='owner',
+            email='owner@jjconstrumadera.com',
+            password='securepass123',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.regular_user = get_user_model().objects.create_user(
+            username='regular',
+            email='regular@example.com',
+            password='secret123',
+            is_staff=False,
+        )
+
+    def test_unauthenticated_access_owner_root_redirects(self):
+        """TEST 1: Usuario no autenticado accede a /owner/ -> redirige a login."""
+        response = self.client.get(reverse('owner_dashboard'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('owner_login'), response.url)
+
+    def test_unauthenticated_access_owner_analytics_redirects(self):
+        """TEST 2: Usuario no autenticado accede a /owner/analytics/ -> redirige a login."""
+        response = self.client.get(reverse('admin_analytics'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('owner_login'), response.url)
+
+    def test_unauthenticated_access_owner_leads_redirects(self):
+        """TEST 3: Usuario no autenticado accede a /owner/leads/ -> redirige a login."""
+        response = self.client.get(reverse('owner_leads'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('owner_login'), response.url)
+
+    def test_unauthenticated_access_owner_portfolio_redirects(self):
+        """TEST 4: Usuario no autenticado accede a /owner/portfolio/ -> redirige a login."""
+        response = self.client.get(reverse('owner_portfolio_list'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('owner_login'), response.url)
+
+    def test_valid_user_can_access_owner_panel(self):
+        """TEST 5: Usuario válido inicia sesión -> accede al panel."""
+        self.client.force_login(self.owner_user)
+        response = self.client.get(reverse('owner_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Panel propietario')
+
+    def test_owner_logout_removes_access(self):
+        """TEST 6: Usuario válido hace logout -> pierde acceso al panel."""
+        self.client.force_login(self.owner_user)
+        # Verificar que tiene acceso
+        response = self.client.get(reverse('owner_dashboard'))
+        self.assertEqual(response.status_code, 200)
+
+        # Hacer logout
+        response = self.client.post(reverse('owner_logout'))
+        self.assertEqual(response.status_code, 302)
+
+        # Verificar que ya no tiene acceso
+        response = self.client.get(reverse('owner_dashboard'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('owner_login'), response.url)
+
+    def test_after_logout_direct_access_redirects_to_login(self):
+        """TEST 7: Después del logout, acceso directo a /owner/ -> redirige a login."""
+        self.client.force_login(self.owner_user)
+        self.client.post(reverse('owner_logout'))
+
+        response = self.client.get(reverse('owner_dashboard'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('owner_login'), response.url)
+
+    def test_session_expires_at_browser_close_setting(self):
+        """TEST 8: Verificar que SESSION_EXPIRE_AT_BROWSER_CLOSE está configurado."""
+        from django.conf import settings
+        self.assertTrue(settings.SESSION_EXPIRE_AT_BROWSER_CLOSE)
+
+    def test_cookie_security_settings_development(self):
+        """TEST 9: Verificar configuración segura de cookies en desarrollo."""
+        from django.conf import settings
+        # En desarrollo (DEBUG=True), las cookies no deben ser Secure
+        # pero sí HttpOnly y SameSite
+        self.assertTrue(settings.SESSION_COOKIE_HTTPONLY)
+        self.assertEqual(settings.SESSION_COOKIE_SAMESITE, 'Lax')
+        self.assertTrue(settings.CSRF_COOKIE_HTTPONLY)
+        self.assertEqual(settings.CSRF_COOKIE_SAMESITE, 'Lax')
+
+    def test_owner_views_have_cache_control_headers(self):
+        """TEST 10: Verificar que las vistas Owner tienen headers anti-cache."""
+        self.client.force_login(self.owner_user)
+        response = self.client.get(reverse('owner_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        # never_cache añade estos headers
+        self.assertIn('no-cache', response.get('Cache-Control', ''))
+        self.assertIn('no-store', response.get('Cache-Control', ''))
+        self.assertIn('must-revalidate', response.get('Cache-Control', ''))
+
+    def test_regular_user_cannot_access_owner(self):
+        """Usuario regular (no staff) no puede acceder al panel."""
+        self.client.force_login(self.regular_user)
+        response = self.client.get(reverse('owner_dashboard'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_owner_login_with_invalid_credentials_fails(self):
+        """Login con credenciales inválidas falla."""
+        response = self.client.post(reverse('owner_login'), {
+            'username': 'owner',
+            'password': 'wrongpass',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Iniciar sesión')
+
+    def test_owner_login_with_valid_credentials_works(self):
+        """Login con credenciales válidas funciona."""
+        response = self.client.post(reverse('owner_login'), {
+            'username': 'owner',
+            'password': 'securepass123',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('owner_dashboard'), response.url)

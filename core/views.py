@@ -1,5 +1,6 @@
 from datetime import timedelta
 from urllib.parse import quote
+from functools import wraps
 
 from django.conf import settings
 from django.contrib import messages
@@ -13,6 +14,24 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
+from django.views.decorators.cache import never_cache
+
+
+def owner_required(view_func):
+    """
+    Decorador combinado para vistas del panel Owner:
+    - Requiere autenticación (login_required con login_url='owner_login')
+    - Requiere ser staff (staff_member_required con login_url='owner_login')
+    - Deshabilita cache del navegador (never_cache)
+    """
+    from django.contrib.admin.views.decorators import staff_member_required as _staff_member_required
+    from django.contrib.auth.decorators import login_required as _login_required
+    from django.views.decorators.cache import never_cache as _never_cache
+
+    decorated = _login_required(login_url='owner_login')(view_func)
+    decorated = _staff_member_required(login_url='owner_login')(decorated)
+    decorated = _never_cache(decorated)
+    return decorated
 
 from .forms import (
     ContactForm,
@@ -147,7 +166,7 @@ def get_portfolio_category_items():
     return categories
 
 
-@staff_member_required
+@owner_required
 def admin_analytics(request):
     now = timezone.now()
     today = now.date()
@@ -235,14 +254,12 @@ def owner_login(request):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_dashboard(request):
     return admin_analytics(request)
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_content_dashboard(request):
     sections = []
     for section_key, config in SECTION_EDITOR_MAP.items():
@@ -257,8 +274,7 @@ def owner_content_dashboard(request):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_section_edit(request, section):
     config = SECTION_EDITOR_MAP.get(section)
     if not config:
@@ -291,8 +307,7 @@ def owner_section_edit(request, section):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_leads(request):
     leads = Lead.objects.all().order_by('-created_at')
     search = request.GET.get('q', '').strip()
@@ -314,8 +329,7 @@ def owner_leads(request):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_lead_update_status(request, lead_id):
     lead = get_object_or_404(Lead, pk=lead_id)
     if request.method == 'POST':
@@ -327,8 +341,7 @@ def owner_lead_update_status(request, lead_id):
     return redirect('owner_leads')
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_service_list(request):
     services = Service.objects.all().order_by('name')
     return render(request, 'owner_services.html', {
@@ -337,8 +350,7 @@ def owner_service_list(request):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_service_create(request):
     form = ServiceForm(request.POST or None, request.FILES or None)
     if request.method == 'POST' and form.is_valid():
@@ -352,8 +364,7 @@ def owner_service_create(request):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_service_update(request, service_id):
     service = get_object_or_404(Service, pk=service_id)
     form = ServiceForm(request.POST or None, request.FILES or None, instance=service)
@@ -369,8 +380,7 @@ def owner_service_update(request, service_id):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_service_delete(request, service_id):
     service = get_object_or_404(Service, pk=service_id)
     service.delete()
@@ -378,8 +388,7 @@ def owner_service_delete(request, service_id):
     return redirect('owner_service_list')
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_list(request):
     categories = get_portfolio_category_items()
     selected_slug = request.GET.get('category', '').strip()
@@ -396,8 +405,7 @@ def owner_portfolio_list(request):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_category_create(request):
     form = PortfolioCategoryForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -413,8 +421,7 @@ def owner_portfolio_category_create(request):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_category_update(request, category_id):
     category = get_object_or_404(PortfolioCategory, pk=category_id)
     old_name = category.name
@@ -435,8 +442,7 @@ def owner_portfolio_category_update(request, category_id):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_category_delete(request, category_id):
     category = get_object_or_404(PortfolioCategory, pk=category_id)
     fallback_category = PortfolioCategory.objects.exclude(pk=category.pk).order_by('sort_order', 'name').first()
@@ -447,8 +453,7 @@ def owner_portfolio_category_delete(request, category_id):
     return redirect('owner_portfolio_list')
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_create(request):
     form = PortfolioProjectForm(request.POST or None, request.FILES or None)
     if request.method == 'POST' and form.is_valid():
@@ -462,8 +467,7 @@ def owner_portfolio_create(request):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_update(request, project_id):
     project = get_object_or_404(PortfolioProject, pk=project_id)
     form = PortfolioProjectForm(request.POST or None, request.FILES or None, instance=project)
@@ -479,8 +483,7 @@ def owner_portfolio_update(request, project_id):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_delete(request, project_id):
     project = get_object_or_404(PortfolioProject, pk=project_id)
     project.delete()
@@ -488,8 +491,7 @@ def owner_portfolio_delete(request, project_id):
     return redirect('owner_portfolio_list')
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_images(request, project_id):
     project = get_object_or_404(PortfolioProject, pk=project_id)
     form = PortfolioImageForm(request.POST or None, request.FILES or None)
@@ -507,8 +509,7 @@ def owner_portfolio_images(request, project_id):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_image_update(request, project_id, image_id):
     project = get_object_or_404(PortfolioProject, pk=project_id)
     image = get_object_or_404(PortfolioImage, pk=image_id, project=project)
@@ -526,8 +527,7 @@ def owner_portfolio_image_update(request, project_id, image_id):
     })
 
 
-@login_required(login_url='owner_login')
-@staff_member_required
+@owner_required
 def owner_portfolio_image_delete(request, project_id, image_id):
     project = get_object_or_404(PortfolioProject, pk=project_id)
     image = get_object_or_404(PortfolioImage, pk=image_id, project=project)
