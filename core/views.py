@@ -722,7 +722,8 @@ def contact(request):
     map_embed_url = f'https://www.google.com/maps?q={map_query_url}&output=embed'
     map_directions_url = f'https://www.google.com/maps/search/?api=1&query={map_query_url}'
 
-    contact_phone = get_site_content_value('contact_phone', '+57 (000) 000 0000')
+    contact_phone = get_site_content_value('contact_phone', '+57 311 719 5100')
+    contact_phone_href = contact_phone.replace(' ', '')
     contact_whatsapp = get_site_content_value('contact_whatsapp', '3117195100')
     contact_address = get_site_content_value('contact_address', 'JJ Construmadera S.A.S, Cl 22 #30b1, Montería, Córdoba')
     contact_company_info = get_site_content_value('contact_company_info', 'Atención personalizada para proyectos residenciales y comerciales.')
@@ -765,6 +766,7 @@ def contact(request):
         'map_embed_url': map_embed_url,
         'map_directions_url': map_directions_url,
         'contact_phone': contact_phone,
+        'contact_phone_href': contact_phone_href,
         'contact_whatsapp': contact_whatsapp,
         'contact_address': contact_address,
         'contact_company_info': contact_company_info,
