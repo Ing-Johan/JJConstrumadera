@@ -1,0 +1,48 @@
+# Blueprint de Render para JJ Construmadera.
+# Uso: Dashboard de Render → New → Blueprint → conectar el repo.
+# Las variables marcadas con `sync: false` se configuran a mano en el dashboard
+# (nunca subir valores reales a Git).
+services:
+  - type: web
+    name: jj-construmadera
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn construmadera_web.wsgi:application --log-file -
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.7
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: USE_SQLITE
+        value: False
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jj-construmadera-db
+          property: connectionString
+      - key: USE_CLOUDINARY
+        value: True
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: WHATSAPP_BUSINESS_NUMBER
+        value: 3117195100
+      - key: CONTACT_MAP_QUERY
+        value: JJ Construmadera S.A.S, Cl 22 #30b1, Montería, Córdoba
+      - key: SEND_ADMIN_EMAIL_ON_LEAD
+        value: False
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.console.EmailBackend
+      - key: DEFAULT_FROM_EMAIL
+        value: no-reply@localhost
+      - key: ADMIN_EMAIL
+        value: admin@localhost
+
+databases:
+  - name: jj-construmadera-db
+    plan: free

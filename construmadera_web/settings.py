@@ -5,6 +5,7 @@ Django settings for construmadera_web project.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 import dj_database_url
 
@@ -13,6 +14,9 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key-change-me')
 DEBUG = os.getenv('DEBUG', 'True').lower() in {'1', 'true', 'yes', 'on'}
+
+if not DEBUG and SECRET_KEY == 'dev-secret-key-change-me':
+    raise ImproperlyConfigured('DJANGO_SECRET_KEY debe configurarse en producción (DEBUG=False).')
 
 ALLOWED_HOSTS = [
     host.strip()
@@ -165,6 +169,15 @@ if csrf_trusted_origins:
 else:
     CSRF_TRUSTED_ORIGINS = []
 
+# Host público asignado por Render (cero configuración manual de dominios).
+render_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME', '').strip()
+if render_hostname:
+    if render_hostname not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(render_hostname)
+    render_origin = f'https://{render_hostname}'
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Session security
@@ -204,4 +217,7 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@localhost')
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@localhost')
+# Aviso por email al admin con cada lead nuevo (además del redirect a WhatsApp).
+# False por defecto: el flujo principal es WhatsApp y los tests lo verifican.
+SEND_ADMIN_EMAIL_ON_LEAD = os.getenv('SEND_ADMIN_EMAIL_ON_LEAD', 'False').lower() in {'1', 'true', 'yes', 'on'}
 

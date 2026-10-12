@@ -52,3 +52,16 @@ Por defecto, el proyecto usa SQLite para desarrollo. Para producción, cambie `U
 - `templates/`: plantillas globales
 - `static/`: archivos estáticos
 - `media/`: archivos multimedia
+
+## Despliegue en Render
+
+1. Subir el código a GitHub (`main`).
+2. En Render: New → Blueprint → conectar el repo (usa `render.yaml`).
+3. Configurar en el dashboard las variables marcadas con `sync: false`:
+   `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+4. El Blueprint crea el servicio web + PostgreSQL y configura solo:
+   `DJANGO_SECRET_KEY` (generada), `DATABASE_URL` (automática),
+   `DEBUG=False`, `USE_SQLITE=False`, `USE_CLOUDINARY=True`.
+5. Tras el deploy, crear el superusuario con la consola de Render:
+   `python manage.py createsuperuser` y poblar el catálogo si aplica:
+   `python manage.py sync_catalog`.
