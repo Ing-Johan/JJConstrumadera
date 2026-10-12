@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -52,6 +53,37 @@ class PublicPagesTests(TestCase):
         self.assertContains(response, 'id="collage-pause"')
         self.assertContains(response, 'aria-pressed="false"')
         self.assertContains(response, 'Pausar animación del carrusel')
+
+    def test_home_collage_has_rope_svg(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="collage-rope"')
+        self.assertContains(response, 'id="collage-rope-line"')
+        self.assertContains(response, 'id="collage-rope-knots"')
+
+    def test_home_collage_has_no_visible_captions(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'collage-caption')
+
+    def test_contact_page_shows_business_phone(self):
+        response = self.client.get(reverse('contact'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '+57 311 719 5100')
+        self.assertContains(response, 'tel:+573117195100')
+
+    def test_nav_portfolio_blink_and_rope_styles_exist(self):
+        css_path = settings.BASE_DIR / 'static' / 'css' / 'styles.css'
+        css = css_path.read_text(encoding='utf-8')
+
+        self.assertIn('portfolioBlink', css)
+        self.assertIn('href*="portafolio"', css)
+        self.assertIn('overflow-x: clip', css)
+        self.assertIn('.rope-line', css)
+        self.assertIn('ropeFlow', css)
 
     def test_contact_page_loads(self):
         response = self.client.get(reverse('contact'))
