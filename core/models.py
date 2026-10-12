@@ -105,6 +105,7 @@ class PortfolioImage(BaseContentModel):
     caption = models.CharField(max_length=120, blank=True, verbose_name='Leyenda')
     optimized_image = models.ImageField(upload_to='portfolio/optimized/', blank=True, null=True, verbose_name='Imagen optimizada')
     thumb_image = models.ImageField(upload_to='portfolio/thumbs/', blank=True, null=True, verbose_name='Miniatura')
+    derivatives_error = models.TextField(blank=True, default='', verbose_name='Error de procesamiento')
     sort_order = models.PositiveIntegerField(default=0, verbose_name='Orden')
     is_primary = models.BooleanField(default=False, verbose_name='Principal')
 
@@ -117,31 +118,40 @@ class PortfolioImage(BaseContentModel):
         return f'{self.project.name} - {self.caption or "Imagen"}'
 
     def save(self, *args, **kwargs):
+        update_fields = kwargs.get('update_fields')
+        # Solo regenerar al guardar el registro completo o al cambiar la imagen.
+        # Los updates parciales (caption, sort_order, reintentos) no reprocesan.
+        regenerate = update_fields is None or 'image' in update_fields
         super().save(*args, **kwargs)
 
-        if not self.image:
+        if not self.image or not regenerate:
             return
 
         self.regenerate_derivatives()
-        super().save(update_fields=['optimized_image', 'thumb_image', 'updated_at'])
+        super().save(update_fields=['optimized_image', 'thumb_image', 'derivatives_error', 'updated_at'])
 
     def regenerate_derivatives(self):
         """Genera optimized_image y thumb_image a partir del archivo original.
 
         No destructivo: nunca elimina la imagen original y conserva el registro.
+        Los fallos se registran en `derivatives_error` (visible en el panel owner)
+        además del log del servidor. Devuelve True si ambas versiones se generaron.
         """
         if not self.image:
-            return
+            return False
 
         try:
             from PIL import Image
         except ImportError:
+            message = 'Pillow no está disponible.'
             logger.warning(
-                'Pillow no está disponible; no se generaron versiones optimizadas para %s (id=%s).',
+                '%s No se generaron versiones optimizadas para %s (id=%s).',
+                message,
                 self.image.name,
                 self.pk,
             )
-            return
+            self.derivatives_error = message
+            return False
 
         basename = self.image.name.rsplit('/', 1)[-1]
         prefix = f'{self.pk}_{basename}'
@@ -151,12 +161,15 @@ class PortfolioImage(BaseContentModel):
                 img = Image.open(image_file)
                 img.load()
         except Exception:
+            message = 'No se pudo abrir la imagen original.'
             logger.exception(
-                'No se pudo abrir la imagen original "%s" (id=%s).',
+                '%s "%s" (id=%s).',
+                message,
                 self.image.name,
                 self.pk,
             )
-            return
+            self.derivatives_error = message
+            return False
 
         img_format = img.format or 'JPEG'
         save_kwargs = {'optimize': True}
@@ -164,6 +177,8 @@ class PortfolioImage(BaseContentModel):
             save_kwargs.update({'quality': 85})
 
         # Imagen optimizada (máx. 1600px de ancho, conservando proporción)
+        optimized_ok = False
+        thumb_ok = False
         try:
             max_width = 1600
             if img.width > max_width:
@@ -182,12 +197,14 @@ class PortfolioImage(BaseContentModel):
                 self.optimized_image.delete(save=False)
             self.optimized_image.save(prefix, ContentFile(optimized_io.getvalue()), save=False)
             optimized_io.close()
+            optimized_ok = True
         except Exception:
             logger.exception(
                 'Falló la generación de la imagen optimizada para %s (id=%s).',
                 self.image.name,
                 self.pk,
             )
+            optimized_ok = False
 
         # Miniatura (ajustada dentro de 800x600, conservando proporción)
         try:
@@ -201,12 +218,22 @@ class PortfolioImage(BaseContentModel):
                 self.thumb_image.delete(save=False)
             self.thumb_image.save(prefix, ContentFile(thumb_io.getvalue()), save=False)
             thumb_io.close()
+            thumb_ok = True
         except Exception:
             logger.exception(
                 'Falló la generación de la miniatura para %s (id=%s).',
                 self.image.name,
                 self.pk,
             )
+            thumb_ok = False
+
+        errors = []
+        if not optimized_ok:
+            errors.append('Falló la imagen optimizada.')
+        if not thumb_ok:
+            errors.append('Falló la miniatura.')
+        self.derivatives_error = ' '.join(errors)
+        return not errors
 
 
 class SiteContent(BaseContentModel):

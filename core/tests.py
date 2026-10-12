@@ -24,6 +24,27 @@ class PublicPagesTests(TestCase):
         response = self.client.get(reverse('about'))
         self.assertEqual(response.status_code, 200)
 
+    def test_about_page_renders_site_content(self):
+        SiteContent.objects.create(slug='about_title', title='Título', body='Título Nosotros TMP', is_active=True)
+        SiteContent.objects.create(slug='about_description', title='Descripción', body='Historia TMP', is_active=True)
+        SiteContent.objects.create(slug='about_mission', title='Misión', body='Misión TMP', is_active=True)
+        SiteContent.objects.create(slug='about_vision', title='Visión', body='Visión TMP', is_active=True)
+
+        response = self.client.get(reverse('about'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Título Nosotros TMP')
+        self.assertContains(response, 'Historia TMP')
+        self.assertContains(response, 'Misión TMP')
+        self.assertContains(response, 'Visión TMP')
+
+    def test_home_collage_has_four_cards(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        for index in range(4):
+            self.assertContains(response, f'data-index="{index}"')
+
     def test_contact_page_loads(self):
         response = self.client.get(reverse('contact'))
         self.assertEqual(response.status_code, 200)
@@ -439,3 +460,102 @@ class OwnerSecurityTests(TestCase):
         })
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('owner_dashboard'), response.url)
+
+
+class LeadAdminEmailTests(TestCase):
+    """Aviso por email al admin (SEND_ADMIN_EMAIL_ON_LEAD)."""
+
+    def _post_lead(self):
+        return self.client.post(
+            reverse('contact'),
+            {
+                'name': 'Ana Gómez',
+                'phone': '3001234567',
+                'email': 'ana@example.com',
+                'address': 'Calle 12 # 34-56',
+                'message': 'Necesito información para un closet a medida.',
+            },
+        )
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        ADMIN_EMAIL='admin@jjconstrumadera.com',
+        DEFAULT_FROM_EMAIL='no-reply@jjconstrumadera.com',
+        SEND_ADMIN_EMAIL_ON_LEAD=True,
+    )
+    def test_contact_form_sends_admin_email_when_enabled(self):
+        response = self._post_lead()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('wa.me/3117195100', response.url)
+        self.assertEqual(Lead.objects.count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertIn('admin@jjconstrumadera.com', email.to)
+        self.assertIn('Ana Gómez', email.body)
+        self.assertIn('Necesito información para un closet a medida.', email.body)
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        ADMIN_EMAIL='admin@jjconstrumadera.com',
+        DEFAULT_FROM_EMAIL='no-reply@jjconstrumadera.com',
+        SEND_ADMIN_EMAIL_ON_LEAD=False,
+    )
+    def test_contact_form_skips_admin_email_when_disabled(self):
+        response = self._post_lead()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Lead.objects.count(), 1)
+        self.assertEqual(len(mail.outbox), 0)
+
+
+class PortfolioImageDerivativesTests(TestCase):
+    """Visibilidad de fallos en el procesamiento de imágenes."""
+
+    def setUp(self):
+        self.project = PortfolioProject.objects.create(
+            name='Cocina modular',
+            description='Diseño funcional.',
+            category='Residencial',
+            is_active=True,
+        )
+
+    def test_invalid_image_records_derivatives_error(self):
+        """Una imagen corrupta no rompe el guardado pero deja error visible."""
+        image = SimpleUploadedFile('bad.png', b'fake-image', content_type='image/png')
+        img = PortfolioImage.objects.create(project=self.project, image=image)
+        img.refresh_from_db()
+
+        self.assertTrue(img.derivatives_error)
+        self.assertFalse(bool(img.optimized_image))
+        self.assertFalse(bool(img.thumb_image))
+
+    def test_valid_image_clears_derivatives_error(self):
+        """Una imagen válida genera derivadas y limpia el error."""
+        from io import BytesIO
+
+        from PIL import Image as PILImage
+
+        buf = BytesIO()
+        PILImage.new('RGB', (20, 20), 'red').save(buf, format='PNG')
+        image = SimpleUploadedFile('valid.png', buf.getvalue(), content_type='image/png')
+        img = PortfolioImage.objects.create(project=self.project, image=image)
+        img.refresh_from_db()
+
+        self.assertEqual(img.derivatives_error, '')
+        self.assertTrue(bool(img.optimized_image))
+        self.assertTrue(bool(img.thumb_image))
+
+    def test_partial_update_does_not_regenerate(self):
+        """Un update parcial (caption) no reprocesa ni borra el error registrado."""
+        image = SimpleUploadedFile('bad2.png', b'fake-image', content_type='image/png')
+        img = PortfolioImage.objects.create(project=self.project, image=image)
+        img.refresh_from_db()
+        self.assertTrue(img.derivatives_error)
+
+        img.caption = 'Leyenda manual'
+        img.save(update_fields=['caption', 'updated_at'])
+        img.refresh_from_db()
+
+        self.assertEqual(img.caption, 'Leyenda manual')
+        self.assertTrue(img.derivatives_error)

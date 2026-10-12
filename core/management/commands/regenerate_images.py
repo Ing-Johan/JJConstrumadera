@@ -41,7 +41,7 @@ class Command(BaseCommand):
 
         for image in queryset:
             image.regenerate_derivatives()
-            image.save(update_fields=['optimized_image', 'thumb_image', 'updated_at'])
+            image.save(update_fields=['optimized_image', 'thumb_image', 'derivatives_error', 'updated_at'])
 
             if image.optimized_image and image.thumb_image:
                 processed += 1

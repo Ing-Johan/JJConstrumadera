@@ -1,4 +1,3 @@
-import os
 import re
 from pathlib import Path
 from django.conf import settings
@@ -200,7 +199,7 @@ class Command(BaseCommand):
                     for img_file in image_files:
                         self.process_image(
                             img_file, folder_key, category,
-                            force=dry_run, dry_run=dry_run, stats=stats,
+                            force=False, dry_run=dry_run, stats=stats,
                             update_captions=update_captions
                         )
 
@@ -363,7 +362,7 @@ class Command(BaseCommand):
             for img in project.images.all():
                 if not dry_run:
                     img.regenerate_derivatives()
-                    img.save(update_fields=['optimized_image', 'thumb_image', 'updated_at'])
+                    img.save(update_fields=['optimized_image', 'thumb_image', 'derivatives_error', 'updated_at'])
                 stats['images_regenerated'] += 1
         self.stdout.write(f'    Derivadas regeneradas: {stats["images_regenerated"]}')
 
