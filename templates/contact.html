@@ -14,11 +14,12 @@
   <div class="container contact-grid">
     <div class="contact-card">
       <h2>Solicita una cotización</h2>
-      <p>Comparte tus necesidades y te responderemos con la mejor orientación para tu proyecto.</p>
+      <p>{{ contact_company_info }}</p>
       <ul class="contact-list">
         <li><strong>Email:</strong> construmadera2018@gmail.com</li>
-        <li><strong>Teléfono:</strong> +57 3117195100</li>
-        <li><strong>Ubicación:</strong> Montería - Córdoba, Colombia</li>
+        <li><strong>Teléfono:</strong> <a href="tel:{{ contact_phone }}">{{ contact_phone }}</a></li>
+        <li><strong>WhatsApp:</strong> <a href="https://wa.me/{{ contact_whatsapp }}" target="_blank" rel="noopener noreferrer">{{ contact_whatsapp }}</a></li>
+        <li><strong>Ubicación:</strong> {{ contact_address }}</li>
       </ul>
     </div>
 
@@ -97,7 +98,7 @@
 
           <div class="field-row">
             <label for="id_address">
-              <span>Dirección *</span>
+              <span>Ciudad / Dirección (opcional)</span>
               {{ form.address }}
             </label>
             {% if form.address.errors %}
@@ -127,7 +128,7 @@
         <h2>Encuéntranos</h2>
         <span>Ubicación</span>
       </div>
-      <p><strong>JJ Construmadera S.A.S</strong><br>Montería - Córdoba, Colombia</p>
+      <p><strong>JJ Construmadera S.A.S</strong><br>{{ contact_address }}</p>
       <div class="map-frame-wrap">
         <iframe
           src="{{ map_embed_url }}"

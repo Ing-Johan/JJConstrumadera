@@ -25,10 +25,40 @@
       </ul>
     </div>
 
-    <div class="hero-visual" aria-label="JJ Construmadera SAS">
-      <figure class="hero-image-wrapper logo-hero-large">
-        <img src="{% static 'images/logo-entero.png' %}" alt="JJ Construmadera SAS" class="hero-image" />
-      </figure>
+    <div class="hero-visual" aria-label="Proyectos JJ Construmadera SAS">
+      <div class="hero-collage" id="hero-collage">
+        {% for cat_name in category_order %}
+          {% with project=category_projects|get_item:cat_name %}
+            <div class="collage-card collage-card--project" data-index="{{ forloop.counter0 }}">
+              <figure class="collage-image-wrapper">
+                {% if project and project.image %}
+                  <img src="{{ project.image.url }}" alt="{{ project.name }}" class="collage-image" loading="lazy" />
+                {% elif project and project.images.first and project.images.first.image %}
+                  <img src="{{ project.images.first.image.url }}" alt="{{ project.name }}" class="collage-image" loading="lazy" />
+                {% else %}
+                  <img src="{% static 'images/logo-entero.png' %}" alt="JJ Construmadera SAS - {{ cat_name }}" class="collage-image" loading="lazy" />
+                {% endif %}
+              </figure>
+            </div>
+          {% endwith %}
+        {% endfor %}
+        <div class="collage-card collage-card--project" data-index="3">
+          <figure class="collage-image-wrapper">
+            {% if hero_feature_image %}
+              {% if hero_feature_image.optimized_image %}
+                <img src="{{ hero_feature_image.optimized_image.url }}" alt="{{ hero_feature_image.caption|default:hero_feature_image.project.name }}" class="collage-image" loading="lazy" />
+              {% else %}
+                <img src="{{ hero_feature_image.image.url }}" alt="{{ hero_feature_image.caption|default:hero_feature_image.project.name }}" class="collage-image" loading="lazy" />
+              {% endif %}
+            {% else %}
+              <img src="{% static 'images/logo-entero.png' %}" alt="JJ Construmadera SAS" class="collage-image" loading="lazy" />
+            {% endif %}
+          </figure>
+        </div>
+      </div>
+      {% if hero_extra_images %}
+        {{ hero_extra_images|json_script:"hero-extra-images-data" }}
+      {% endif %}
     </div>
   </div>
 </section>

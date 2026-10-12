@@ -6,7 +6,7 @@
 <section class="page-hero section">
   <div class="container narrow">
     <p class="eyebrow">Nosotros</p>
-    <h1>Una empresa con criterio, experiencia y compromiso.</h1>
+    <h1>{{ about_title }}</h1>
   </div>
 </section>
 
@@ -16,17 +16,34 @@
       <h2>Más que madera: soluciones con propósito.</h2>
     </div>
     <div class="text-stack">
-      <p>
-        JJ Construmadera SAS nace con el propósito de aportar valor a cada proyecto mediante carpintería,
-        mobiliario y acabados de calidad, siempre con atención cercana a las necesidades del cliente.
-      </p>
-      <p>
-        Trabajamos con orden, responsabilidad y criterio para entregar resultados funcionales y visualmente
-        consistentes con el estilo de cada espacio.
-      </p>
+      <p>{{ about_description|linebreaksbr }}</p>
+      <ul class="hero-points">
+        <li>Desde 2018</li>
+        <li>Montería, Córdoba</li>
+        <li>Residencial y comercial</li>
+      </ul>
     </div>
   </div>
 </section>
+
+{% if about_mission or about_vision %}
+<section class="section">
+  <div class="container card-grid three-col" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+    {% if about_mission %}
+    <article class="info-card">
+      <p class="eyebrow">Misión</p>
+      <p>{{ about_mission }}</p>
+    </article>
+    {% endif %}
+    {% if about_vision %}
+    <article class="info-card">
+      <p class="eyebrow">Visión</p>
+      <p>{{ about_vision }}</p>
+    </article>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
 
 <section class="section muted-section">
   <div class="container card-grid three-col">

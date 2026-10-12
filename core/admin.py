@@ -1,11 +1,12 @@
 from django.contrib import admin
 
-from .models import Lead, PageVisit, PortfolioImage, PortfolioProject, Service, SiteContent
+from .models import Lead, PageVisit, PortfolioCategory, PortfolioImage, PortfolioProject, Service, SiteContent
 
 
 class PortfolioImageInline(admin.TabularInline):
     model = PortfolioImage
     extra = 3
+    readonly_fields = ('derivatives_error',)
 
 
 @admin.register(Service)
@@ -13,6 +14,16 @@ class ServiceAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active', 'created_at')
     list_filter = ('is_active',)
     search_fields = ('name', 'description')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(PortfolioCategory)
+class PortfolioCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'sort_order', 'is_active', 'created_at')
+    list_editable = ('sort_order', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ('created_at', 'updated_at')
 
 

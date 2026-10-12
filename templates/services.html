@@ -6,11 +6,31 @@
 <section class="page-hero section">
   <div class="container narrow">
     <p class="eyebrow">Servicios</p>
-    <h1>Soluciones en madera y acabados para proyectos reales.</h1>
+    <h1>{{ service_title }}</h1>
+    {% if service_intro %}<p>{{ service_intro }}</p>{% endif %}
   </div>
 </section>
 
 <section class="section">
+  {% if services %}
+  <div class="container card-grid three-col">
+    {% for service in services %}
+    <article class="info-card service-card">
+      {% if service.image %}
+        <img src="{{ service.image.url }}" alt="{{ service.name }}" class="owner-thumb" loading="lazy" />
+      {% else %}
+        <span class="card-icon icon-carpentry" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      {% endif %}
+      <h3>{{ service.name }}</h3>
+      <p>{{ service.description }}</p>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
   <div class="container card-grid three-col">
     <article class="info-card service-card">
       <span class="card-icon icon-carpentry" aria-hidden="true">
@@ -74,5 +94,6 @@
       <p>Asesoría para soluciones específicas según requerimientos del cliente.</p>
     </article>
   </div>
+  {% endif %}
 </section>
 {% endblock %}

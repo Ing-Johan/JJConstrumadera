@@ -32,6 +32,9 @@
           {% endif %}
           <p>{{ image.caption|default:'Imagen del proyecto' }}</p>
           <p class="meta-note">Orden: {{ image.sort_order|default:0 }}</p>
+          {% if not image.optimized_image or not image.thumb_image %}
+            <p class="form-errors" role="alert">Sin versiones optimizadas{% if image.derivatives_error %}: {{ image.derivatives_error }}{% endif %} Reintenta con Editar → Guardar o ejecuta <code>regenerate_images</code>.</p>
+          {% endif %}
           <div class="button-row">
             <a href="{% url 'owner_portfolio_image_update' project.id image.id %}" class="btn btn-secondary">Editar</a>
             <a href="{% url 'owner_portfolio_image_delete' project.id image.id %}" class="btn btn-secondary danger-button" onclick="return confirm('¿Eliminar esta imagen?')">Eliminar</a>

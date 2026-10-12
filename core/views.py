@@ -1,6 +1,9 @@
+import logging
 from datetime import timedelta
 from urllib.parse import quote
 from functools import wraps
+
+logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.contrib import messages
@@ -82,6 +85,25 @@ def build_admin_notification_message(lead):
 
     lines.extend(['', 'Mensaje:', lead.message])
     return '\n'.join(lines)
+
+
+def send_admin_notification_email(lead):
+    """Envía el aviso de nuevo lead al ADMIN_EMAIL.
+
+    Nunca debe romper el flujo principal (WhatsApp): cualquier fallo
+    se registra en el log y la solicitud sigue su curso normal.
+    """
+    try:
+        from django.core.mail import send_mail
+        send_mail(
+            subject=f'Nuevo contacto en JJ Construmadera: {lead.name}',
+            message=build_admin_notification_message(lead),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.ADMIN_EMAIL],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception('No se pudo enviar el aviso del lead %s al admin.', lead.pk)
 
 
 SECTION_EDITOR_MAP = {
@@ -543,23 +565,58 @@ def owner_logout(request):
     return redirect('owner_login')
 
 
+def _get_hero_project(hero_name, category_name):
+    """Busca el proyecto hero por nombre exacto, con fallback al más reciente de la categoría."""
+    hero = (
+        PortfolioProject.objects.filter(name=hero_name, is_active=True, image__isnull=False)
+        .exclude(image='')
+        .prefetch_related('images')
+        .first()
+    )
+    if hero:
+        return hero
+    return (
+        PortfolioProject.objects.filter(category=category_name, is_active=True)
+        .exclude(image__isnull=True)
+        .exclude(image='')
+        .order_by('-created_at')
+        .prefetch_related('images')
+        .first()
+    )
+
+
 def home(request):
     service_list = Service.objects.filter(is_active=True).order_by('name')[:3]
-    
-    # Obtener proyectos hero específicos para las 3 cards del home
-    hero_puertas = PortfolioProject.objects.filter(name='Hero Puertas', is_active=True, image__isnull=False).exclude(image='').first()
-    hero_cocinas = PortfolioProject.objects.filter(name='Hero Cocinas', is_active=True, image__isnull=False).exclude(image='').first()
-    hero_muebles = PortfolioProject.objects.filter(name='Hero Muebles y Closets', is_active=True, image__isnull=False).exclude(image='').first()
-    
-    category_projects = {}
-    if hero_puertas:
-        category_projects['Puertas'] = hero_puertas
-    if hero_cocinas:
-        category_projects['Cocinas'] = hero_cocinas
-    if hero_muebles:
-        category_projects['Muebles y Closets'] = hero_muebles
-    
+
+    # Proyectos hero para las 3 cards del home (nombre exacto, con fallback a la categoría).
     category_order = ['Puertas', 'Cocinas', 'Muebles y Closets']
+    hero_names = {
+        'Puertas': 'Hero Puertas',
+        'Cocinas': 'Hero Cocinas',
+        'Muebles y Closets': 'Hero Muebles y Closets',
+    }
+
+    category_projects = {}
+    for cat_name in category_order:
+        project = _get_hero_project(hero_names[cat_name], cat_name)
+        if project:
+            category_projects[cat_name] = project
+
+    # Imágenes para el collage rotativo del hero (galería reciente, gestionable desde el CMS).
+    # La más reciente ocupa la 4ª tarjeta fija; el resto alimenta la rotación.
+    hero_gallery_images = list(
+        PortfolioImage.objects.filter(project__is_active=True, image__isnull=False)
+        .exclude(image='')
+        .select_related('project')
+        .order_by('-created_at')[:12]
+    )
+    hero_feature_image = hero_gallery_images[0] if hero_gallery_images else None
+    hero_extra_images = [
+        {'src': img.optimized_image.url if img.optimized_image else img.image.url,
+         'alt': img.caption or img.project.name}
+        for img in hero_gallery_images[1:]
+        if img.image
+    ]
     
     hero_title = get_site_content_value('home_hero_title', 'Soluciones a medida para espacios que marcan la diferencia.')
     hero_subtitle = get_site_content_value('home_hero_subtitle', 'En JJ Construmadera SAS creamos ambientes funcionales y elegantes con acabados de calidad, atención cercana y ejecución responsable.')
@@ -575,6 +632,8 @@ def home(request):
         'services': service_list,
         'category_projects': category_projects,
         'category_order': category_order,
+        'hero_feature_image': hero_feature_image,
+        'hero_extra_images': hero_extra_images,
     })
 
 
@@ -626,9 +685,23 @@ def portfolio_detail(request, project_id):
 
 def about(request):
     about_title = get_site_content_value('about_title', 'Una empresa con criterio, experiencia y compromiso.')
-    about_description = get_site_content_value('about_description', 'JJ Construmadera SAS nace con el propósito de aportar valor a cada proyecto mediante carpintería, mobiliario y acabados de calidad, siempre con atención cercana a las necesidades del cliente.')
-    about_mission = get_site_content_value('about_mission', 'Crear espacios funcionales, bonitos y duraderos que mejoren la vida de las personas.')
-    about_vision = get_site_content_value('about_vision', 'Ser la referencia en soluciones de madera y acabados para proyectos residenciales y comerciales.')
+    about_description = get_site_content_value(
+        'about_description',
+        'JJ Construmadera SAS es una empresa de Montería, Córdoba, dedicada desde 2018 a la carpintería, '
+        'el mobiliario a medida y los acabados para proyectos residenciales y comerciales.'
+        '\n\nAcompañamos cada proyecto desde la primera conversación: escuchamos las necesidades del cliente, '
+        'proponemos soluciones prácticas y ejecutamos con orden, responsabilidad y atención al detalle.',
+    )
+    about_mission = get_site_content_value(
+        'about_mission',
+        'Crear espacios funcionales, bonitos y duraderos que mejoren la vida de las personas, '
+        'con carpintería y acabados de calidad y un trato cercano en cada proyecto.',
+    )
+    about_vision = get_site_content_value(
+        'about_vision',
+        'Ser la empresa de referencia en soluciones de madera y acabados en la región Caribe, '
+        'reconocida por la calidad constante, el cumplimiento y la confianza de nuestros clientes.',
+    )
     return render(request, 'about.html', {
         'site_name': 'JJ Construmadera',
         'page_title': 'Nosotros',
@@ -677,6 +750,8 @@ def contact(request):
                 form.add_error(None, duplicate_message)
             else:
                 lead = Lead.objects.create(**payload, status='nuevo')
+                if getattr(settings, 'SEND_ADMIN_EMAIL_ON_LEAD', False):
+                    send_admin_notification_email(lead)
                 whatsapp_url = build_whatsapp_url(lead)
                 return redirect(whatsapp_url)
 
