@@ -150,6 +150,13 @@ p {
   opacity: 0.75;
 }
 
+.brand-text {
+  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+  margin: 0.25rem 0 0;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
 .brand-logo {
   height: clamp(36px, 6vw, 40px);
   width: auto;
@@ -210,6 +217,129 @@ p {
 .nav-cta {
   background: var(--color-accent);
   color: #fff;
+}
+
+/* Contact CTA pulse animation */
+@keyframes contactPulse {
+  0%, 100% {
+    transform: scale(1.02);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.nav-cta {
+  animation: contactPulse 1s ease-in-out infinite;
+}
+
+/* Portfolio link animated border - using pseudo-element */
+.nav-link[href*="portfolio"] {
+  position: relative;
+  overflow: visible;
+}
+
+.nav-link[href*="portfolio"]::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 14px;
+  background: conic-gradient(
+    from 0deg,
+    var(--color-accent),
+    var(--color-accent-soft),
+    var(--color-accent),
+    var(--color-accent-soft),
+    var(--color-accent)
+  );
+  z-index: 1;
+  opacity: 0.7;
+  animation: portfolioBorderRotate 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes portfolioBorderRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Show border on hover/focus as well */
+.nav-link[href*="portfolio"]:hover::before,
+.nav-link[href*="portfolio"]:focus-visible::before {
+  opacity: 0.7;
+  animation-duration: 1.5s;
+}
+
+/* Also add a subtle static border as fallback */
+.nav-link[href*="portfolio"] {
+  border: 1px solid var(--color-accent);
+}
+
+/* Hamburger menu animated border */
+.menu-toggle {
+  position: relative;
+  overflow: visible;
+  background: transparent;
+}
+
+.menu-toggle::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 12px;
+  background: conic-gradient(
+    from 0deg,
+    var(--color-accent),
+    var(--color-accent-soft),
+    var(--color-accent),
+    var(--color-accent-soft),
+    var(--color-accent)
+  );
+  z-index: 1;
+  opacity: 0.7;
+  animation: hamburgerBorderRotate 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes hamburgerBorderRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Show border on hover/focus as well */
+.menu-toggle:hover::before,
+.menu-toggle:focus-visible::before {
+  opacity: 0.7;
+  animation-duration: 1.5s;
+}
+
+/* Reduced motion - disable all animations */
+@media (prefers-reduced-motion: reduce) {
+  .nav-cta {
+    animation: none;
+  }
+  
+  .nav-link[href*="portfolio"]::before,
+  .menu-toggle::before {
+    animation: none;
+    opacity: 0.7;
+  }
+  
+  .nav-link[href*="portfolio"]:hover::before,
+  .nav-link[href*="portfolio"]:focus-visible::before,
+  .menu-toggle:hover::before,
+  .menu-toggle:focus-visible::before {
+    animation: none;
+    opacity: 0.7;
+  }
 }
 
 .menu-toggle {
@@ -312,10 +442,10 @@ p {
 }
 
 .hero-visual {
-  min-height: 320px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  min-height: 380px;
 }
 
 .visual-card {
@@ -735,7 +865,11 @@ select {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .hero-grid,
+  .hero-grid {
+    grid-template-columns: 1fr 1.3fr;
+    align-items: stretch;
+  }
+
   .split-layout,
   .contact-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -785,7 +919,8 @@ select {
   }
 
   .hero-grid {
-    align-items: center;
+    align-items: stretch;
+    grid-template-columns: 1fr 1.4fr;
   }
 
   .project-card-large {
@@ -1278,26 +1413,62 @@ select {
   font-weight: 700;
 }
 
-/* Logo hero variant - large card size */
+/* Logo hero variant - full width screen */
+.hero-image-wrapper.logo-hero-full {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-large);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-image-wrapper.logo-hero-full img.hero-image {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 24px 48px rgba(20, 20, 20, 0.18));
+  transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.hero-image-wrapper.logo-hero-full:hover img.hero-image {
+  transform: scale(1.02);
+  filter: drop-shadow(0 32px 64px rgba(217, 119, 6, 0.3));
+}
+
+/* Logo hero variant - large card size (kept for other uses) */
 .hero-image-wrapper.logo-hero-large {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  box-shadow: var(--shadow-soft);
+  background: linear-gradient(145deg, rgba(20, 20, 20, 0.03), rgba(217, 119, 6, 0.05));
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   border-radius: var(--radius-large);
   overflow: hidden;
-  min-height: clamp(300px, 55vw, 450px);
+  border: 1px solid var(--color-line);
+  aspect-ratio: 16 / 10;
+  min-height: clamp(240px, 40vw, 380px);
+  max-height: clamp(320px, 50vw, 480px);
 }
 
 .hero-image-wrapper.logo-hero-large img.hero-image {
   width: 100%;
-  max-width: 100%;
   height: 100%;
-  max-height: clamp(380px, 65vh, 550px);
-  min-height: clamp(380px, 65vh, 550px);
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 24px 48px rgba(20, 20, 20, 0.2));
+  filter: drop-shadow(0 16px 32px rgba(20, 20, 20, 0.15));
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+
+.hero-image-wrapper.logo-hero-large:hover img.hero-image {
+  transform: scale(1.02);
+  filter: drop-shadow(0 24px 48px rgba(217, 119, 6, 0.25));
 }
 
 /* Project image collage for Muebles y Closets */
@@ -1323,6 +1494,313 @@ select {
   .project-image-collage {
     grid-template-columns: 1fr;
     aspect-ratio: 8 / 3;
+  }
+}
+
+/* Hero Collage - Clean 2x2 grid */
+.hero-collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+}
+
+.collage-card {
+  position: relative;
+  border-radius: var(--radius-large);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  background: var(--color-surface);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+
+.collage-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(20, 20, 20, 0.12);
+}
+
+.collage-card[data-fixed] {
+  z-index: 1;
+}
+
+.collage-card--feature {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.03), rgba(217, 119, 6, 0.05));
+  border: 1px solid var(--color-line);
+}
+
+.collage-card--project {
+  display: flex;
+  align-items: stretch;
+}
+
+.collage-image-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.collage-image-wrapper img.collage-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.4s ease;
+}
+
+.collage-card:hover .collage-image-wrapper img.collage-image {
+  filter: brightness(1.04);
+}
+
+/* Ken Burns cinematográfico: zoom/paneo lento y continuo, solo opacity/transform (GPU). */
+.collage-card[data-index] .collage-image {
+  will-change: transform;
+  animation-duration: 24s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.collage-card[data-index="0"] .collage-image {
+  animation-name: kbZoomIn;
+  transform-origin: 40% 60%;
+}
+
+.collage-card[data-index="1"] .collage-image {
+  animation-name: kbZoomOut;
+  transform-origin: 60% 40%;
+}
+
+.collage-card[data-index="2"] .collage-image {
+  animation-name: kbPanLeft;
+  transform-origin: 50% 50%;
+}
+
+.collage-card[data-index="3"] .collage-image {
+  animation-name: kbPanRight;
+  transform-origin: 50% 50%;
+}
+
+@keyframes kbZoomIn {
+  from {
+    transform: scale(1) translate(0, 0);
+  }
+  to {
+    transform: scale(1.14) translate(-2%, 1.5%);
+  }
+}
+
+@keyframes kbZoomOut {
+  from {
+    transform: scale(1.16) translate(2%, -1.5%);
+  }
+  to {
+    transform: scale(1.02) translate(0, 0);
+  }
+}
+
+@keyframes kbPanLeft {
+  from {
+    transform: scale(1.1) translate(3%, 0);
+  }
+  to {
+    transform: scale(1.1) translate(-3%, 0);
+  }
+}
+
+@keyframes kbPanRight {
+  from {
+    transform: scale(1.1) translate(-3%, 1%);
+  }
+  to {
+    transform: scale(1.1) translate(3%, -1%);
+  }
+}
+
+/* Pausa manual (botón) o automática: congela el Ken Burns. */
+.hero-collage.is-paused .collage-image {
+  animation-play-state: paused;
+}
+
+.collage-card--feature .collage-image-wrapper img.collage-image {
+  object-fit: contain;
+  padding: 1.5rem;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.collage-card[data-index] {
+  opacity: 1;
+}
+
+/* Entrada escalonada al cargar la página. */
+.hero-collage .collage-card[data-index] {
+  animation: collageLoad 0.9s ease backwards;
+}
+
+.hero-collage .collage-card[data-index]:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.hero-collage .collage-card[data-index]:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+.hero-collage .collage-card[data-index]:nth-child(4) {
+  animation-delay: 0.36s;
+}
+
+@keyframes collageLoad {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.collage-card[data-index].collage-card--exiting {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.collage-card[data-index].collage-card--entering {
+  animation: collageEnter 0.7s ease-out;
+}
+
+@keyframes collageEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Botón pausar/reanudar (WCAG 2.2.2: todo movimiento automático debe poder pausarse). */
+.hero-visual {
+  position: relative;
+}
+
+.collage-pause {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(20, 20, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.collage-pause:hover {
+  background: rgba(20, 20, 20, 0.8);
+  transform: scale(1.05);
+}
+
+.collage-pause:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.collage-pause svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.collage-pause .icon-play {
+  display: none;
+}
+
+.collage-pause[aria-pressed="true"] .icon-play {
+  display: block;
+}
+
+.collage-pause[aria-pressed="true"] .icon-pause {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-collage .collage-card[data-index] {
+    animation: none;
+  }
+
+  .collage-card[data-index] .collage-image {
+    animation: none;
+    transform: none;
+  }
+
+  .collage-card[data-index].collage-card--entering {
+    animation: none;
+  }
+
+  .collage-pause {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .hero-collage {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    min-height: 360px;
+  }
+
+  .collage-card--feature {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+    min-height: 180px;
+  }
+
+  .collage-card--project:nth-of-type(1) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .collage-card--project:nth-of-type(2) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-collage {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    min-height: auto;
+    gap: 8px;
+  }
+
+  .collage-card--feature {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+    aspect-ratio: 16 / 9;
+    min-height: 140px;
+  }
+
+  .collage-card--project {
+    aspect-ratio: 4 / 3;
   }
 }
 
@@ -1381,11 +1859,31 @@ select {
   }
 
   .hero-image-wrapper.logo-hero-large {
-    min-height: clamp(220px, 45vw, 300px);
+    aspect-ratio: 4 / 3;
+    min-height: clamp(200px, 35vw, 280px);
+    max-height: clamp(260px, 45vw, 340px);
   }
 
   .hero-image-wrapper.logo-hero-large img.hero-image {
-    max-height: clamp(280px, 55vh, 380px);
-    min-height: clamp(280px, 55vh, 380px);
+    max-height: 100%;
+    min-height: 100%;
+  }
+
+  .hero-image-wrapper.logo-hero-full {
+    border-radius: 12px;
+    height: auto;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-image-wrapper.logo-hero-full img.hero-image {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    display: block;
+    object-fit: contain;
+    border-radius: 12px;
   }
 }
