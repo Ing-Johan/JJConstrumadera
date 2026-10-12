@@ -45,6 +45,14 @@ class PublicPagesTests(TestCase):
         for index in range(4):
             self.assertContains(response, f'data-index="{index}"')
 
+    def test_home_collage_has_pause_button(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="collage-pause"')
+        self.assertContains(response, 'aria-pressed="false"')
+        self.assertContains(response, 'Pausar animación del carrusel')
+
     def test_contact_page_loads(self):
         response = self.client.get(reverse('contact'))
         self.assertEqual(response.status_code, 200)

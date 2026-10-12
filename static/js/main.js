@@ -96,12 +96,21 @@ function initHeroCollage() {
     }
   }
 
-  // Sin imágenes extra del CMS no hay rotación (las cards ya son dinámicas).
-  if (extraImages.length === 0) return;
+  const pauseButton = document.getElementById('collage-pause');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Sin imágenes extra o con movimiento reducido: collage estático (el Ken Burns
+  // vive en CSS) y sin botón de pausa.
+  if (extraImages.length === 0 || prefersReducedMotion) {
+    if (pauseButton) pauseButton.style.display = 'none';
+    return;
+  }
 
   let currentImageIndex = 0;
   let isTransitioning = false;
-  const ROTATION_INTERVAL = 10000;
+  let userPaused = false;
+  let rotationTimer = null;
+  const ROTATION_INTERVAL = 8000;
 
   function preloadImages(items) {
     items.forEach(item => {
@@ -111,6 +120,44 @@ function initHeroCollage() {
   }
 
   preloadImages(extraImages);
+
+  function stopTimer() {
+    if (rotationTimer) {
+      clearInterval(rotationTimer);
+      rotationTimer = null;
+    }
+  }
+
+  function startTimer() {
+    stopTimer();
+    if (userPaused || document.hidden) return;
+    rotationTimer = setInterval(rotateCard, ROTATION_INTERVAL);
+  }
+
+  function setPaused(paused) {
+    userPaused = paused;
+    collage.classList.toggle('is-paused', paused);
+    if (pauseButton) {
+      pauseButton.setAttribute('aria-pressed', String(paused));
+      pauseButton.setAttribute(
+        'aria-label',
+        paused ? 'Reanudar animación del carrusel' : 'Pausar animación del carrusel'
+      );
+    }
+    if (paused) stopTimer();
+    else startTimer();
+  }
+
+  if (pauseButton) {
+    pauseButton.addEventListener('click', () => setPaused(!userPaused));
+  }
+
+  // Reinicia el Ken Burns para que cada imagen rotada empiece su propio zoom.
+  function restartKenBurns(img) {
+    img.style.animation = 'none';
+    void img.offsetWidth;
+    img.style.animation = '';
+  }
 
   function rotateCard() {
     if (isTransitioning || rotatingCards.length === 0) return;
@@ -126,27 +173,34 @@ function initHeroCollage() {
       const nextImage = extraImages[currentImageIndex];
       if (img && nextImage) {
         img.src = nextImage.src;
-        img.alt = nextImage.alt;
+        img.alt = nextImage.alt || img.alt;
+        restartKenBurns(img);
         currentImageIndex = (currentImageIndex + 1) % extraImages.length;
       }
 
       cardToRotate.classList.remove('collage-card--exiting');
       cardToRotate.classList.add('collage-card--entering');
 
-      requestAnimationFrame(() => {
+      let finished = false;
+      const done = () => {
+        if (finished) return;
+        finished = true;
         cardToRotate.classList.remove('collage-card--entering');
         isTransitioning = false;
-      });
-    }, 350);
+      };
+      cardToRotate.addEventListener('animationend', done, { once: true });
+      // Respaldo por si animationend no dispara (pestaña oculta, etc.).
+      setTimeout(done, 900);
+    }, 550);
   }
 
-  let rotationTimer = setInterval(rotateCard, ROTATION_INTERVAL);
+  startTimer();
 
-  collage.addEventListener('mouseenter', () => clearInterval(rotationTimer));
-  collage.addEventListener('mouseleave', () => { rotationTimer = setInterval(rotateCard, ROTATION_INTERVAL); });
+  collage.addEventListener('mouseenter', stopTimer);
+  collage.addEventListener('mouseleave', startTimer);
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) clearInterval(rotationTimer);
-    else rotationTimer = setInterval(rotateCard, ROTATION_INTERVAL);
+    if (document.hidden) stopTimer();
+    else startTimer();
   });
 }
