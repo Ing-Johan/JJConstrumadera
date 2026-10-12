@@ -1,0 +1,5 @@
+# Normalizar finales de línea: el repo se desarrolla en Windows y se despliega en Linux.
+* text=auto
+# Python y shell siempre con LF (build.sh debe ejecutarse en Render/Linux).
+*.py text eol=lf
+*.sh text eol=lf
