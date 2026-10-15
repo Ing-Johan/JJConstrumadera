@@ -1522,6 +1522,7 @@ select {
 
 .collage-card {
   position: relative;
+  z-index: 2;
   border-radius: var(--radius-large);
   overflow: hidden;
   box-shadow: var(--shadow-soft);
@@ -1554,8 +1555,7 @@ select {
   opacity: 1;
 }
 
-/* Cuerda naranja que enlaza las tarjetas (trayectoria calculada en JS,
-   por encima de las fotos para que el enlace se lea completo). */
+/* Cuerda naranja que enlaza las tarjetas (en los espacios laterales, detrás de las tarjetas). */
 .collage-rope {
   position: absolute;
   inset: 0;
@@ -1563,7 +1563,7 @@ select {
   height: 100%;
   overflow: visible;
   pointer-events: none;
-  z-index: 4;
+  z-index: 1;
 }
 
 .rope-line {
