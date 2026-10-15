@@ -349,68 +349,82 @@ p {
   box-shadow: 0 0 8px var(--color-accent);
 }
 
-/* Animated border ring */
-.menu-toggle::before {
+/* Animated paint stroke background */
+.menu-toggle::before,
+.menu-toggle::after {
   content: '';
   position: absolute;
-  inset: -4px;
-  border-radius: 16px;
-  background: conic-gradient(
-    from 0deg,
-    var(--color-accent),
-    var(--color-accent-soft),
-    var(--color-accent),
-    var(--color-accent-soft),
-    var(--color-accent)
-  );
   z-index: -1;
-  opacity: 0;
-  animation: hamburgerBorderRotate 4s linear infinite;
   pointer-events: none;
-  transform: scale(0.9);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  border-radius: 16px;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-@keyframes hamburgerBorderRotate {
-  0% { transform: scale(0.9) rotate(0deg); }
-  100% { transform: scale(0.9) rotate(360deg); }
+/* Main paint stroke - organic blob shape */
+.menu-toggle::before {
+  inset: -8px;
+  background: var(--color-accent);
+  opacity: 0;
+  transform: scale(0.85) rotate(-3deg);
+  border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
+  animation: paintStrokeBreathe 4s ease-in-out infinite;
 }
 
+/* Secondary accent stroke */
+.menu-toggle::after {
+  inset: -12px;
+  background: var(--color-accent-soft);
+  opacity: 0;
+  transform: scale(0.7) rotate(12deg);
+  border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%;
+  animation: paintStrokeBreathe 4s ease-in-out infinite reverse;
+}
+
+@keyframes paintStrokeBreathe {
+  0%, 100% {
+    transform: scale(0.85) rotate(-3deg);
+    border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
+  }
+  25% {
+    transform: scale(0.92) rotate(1deg);
+    border-radius: 55% 45% 50% 50% / 50% 50% 45% 55%;
+  }
+  50% {
+    transform: scale(0.98) rotate(-1deg);
+    border-radius: 50% 50% 45% 55% / 55% 45% 50% 50%;
+  }
+  75% {
+    transform: scale(0.92) rotate(2deg);
+    border-radius: 45% 55% 50% 50% / 50% 50% 55% 45%;
+  }
+}
+
+/* Hover/Focus - paint stroke expands and becomes visible */
 .menu-toggle:hover::before,
 .menu-toggle:focus-visible::before {
-  opacity: 0.6;
-  transform: scale(1) rotate(0deg);
+  opacity: 0.35;
+  transform: scale(1.05) rotate(0deg);
   animation-duration: 2s;
 }
 
-/* Open state - transform to X */
-.menu-toggle[aria-expanded="true"] span:nth-child(1) {
-  transform: translateY(7.5px) rotate(45deg);
-  width: 28px;
-  background: var(--color-accent);
+.menu-toggle:hover::after,
+.menu-toggle:focus-visible::after {
+  opacity: 0.25;
+  transform: scale(1.15) rotate(0deg);
+  animation-duration: 2s;
 }
 
-.menu-toggle[aria-expanded="true"] span:nth-child(2) {
-  opacity: 0;
-  width: 0;
-}
-
-.menu-toggle[aria-expanded="true"] span:nth-child(3) {
-  transform: translateY(-7.5px) rotate(-45deg);
-  width: 28px;
-  background: var(--color-accent);
-}
-
-/* Glow on bars when open */
-.menu-toggle[aria-expanded="true"] span::before,
-.menu-toggle[aria-expanded="true"] span::after {
-  opacity: 0.4;
-}
-
-/* Border ring highlighted when open */
+/* Open state - paint stroke becomes solid accent */
 .menu-toggle[aria-expanded="true"]::before {
-  opacity: 0.8;
-  transform: scale(1.05);
+  opacity: 0.5;
+  transform: scale(1.15) rotate(0deg);
+  animation-duration: 1.5s;
+  background: var(--color-accent);
+}
+
+.menu-toggle[aria-expanded="true"]::after {
+  opacity: 0.3;
+  transform: scale(1.25) rotate(0deg);
   animation-duration: 1.5s;
 }
 
@@ -426,15 +440,22 @@ p {
     box-shadow: none;
   }
 
-  .menu-toggle::before {
+  .menu-toggle::before,
+  .menu-toggle::after {
     animation: none;
-    opacity: 0.6;
+    opacity: 0;
   }
 
   .menu-toggle:hover::before,
-  .menu-toggle:focus-visible::before {
+  .menu-toggle:focus-visible::before,
+  .menu-toggle:hover::after,
+  .menu-toggle:focus-visible::after {
     animation: none;
-    opacity: 0.6;
+  }
+
+  .menu-toggle[aria-expanded="true"]::before,
+  .menu-toggle[aria-expanded="true"]::after {
+    animation: none;
   }
 
   .menu-toggle span {
