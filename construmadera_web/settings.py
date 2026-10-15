@@ -149,10 +149,21 @@ USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False').lower() in {'1', 'true', '
 # Debe definirse ANTES de STORAGES porque el módulo cloudinary_storage
 # lee las credenciales al importarse (module-level).
 if USE_CLOUDINARY:
+    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
+    api_key = os.getenv('CLOUDINARY_API_KEY')
+    api_secret = os.getenv('CLOUDINARY_API_SECRET')
+
+    if not cloud_name or not api_key or not api_secret:
+        raise ImproperlyConfigured(
+            'USE_CLOUDINARY=True pero faltan variables de entorno: '
+            'CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET. '
+            'Configúralas en Render Dashboard → Environment.'
+        )
+
     CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+        'CLOUD_NAME': cloud_name,
+        'API_KEY': api_key,
+        'API_SECRET': api_secret,
     }
 
 STORAGES = {
