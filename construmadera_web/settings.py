@@ -145,6 +145,16 @@ MEDIA_ROOT = BASE_DIR / os.getenv('MEDIA_ROOT', 'media')
 # 'staticfiles' = archivos estáticos (WhiteNoise en producción, Django en desarrollo).
 USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False').lower() in {'1', 'true', 'yes', 'on'}
 
+# Configuración de Cloudinary para django-cloudinary-storage.
+# Debe definirse ANTES de STORAGES porque el módulo cloudinary_storage
+# lee las credenciales al importarse (module-level).
+if USE_CLOUDINARY:
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+    }
+
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
