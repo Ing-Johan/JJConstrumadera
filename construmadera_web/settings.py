@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.middleware.AnalyticsMiddleware',
+    # 'core.middleware.AnalyticsMiddleware',  # Deshabilitado temporalmente para debug 500
 ]
 
 ROOT_URLCONF = 'construmadera_web.urls'
@@ -209,6 +209,46 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 # SECURE_HSTS_PRELOAD = True
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Logging para producción (stdout - capturado por Render)
+if not DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {message}',
+                'style': '{',
+            },
+        },
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'WARNING',
+                'propagate': False,
+            },
+            'django.request': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+                'propagate': False,
+            },
+            'django.server': {
+                'handlers': ['console'],
+                'level': 'WARNING',
+                'propagate': False,
+            },
+        },
+    }
 
 WHATSAPP_BUSINESS_NUMBER = os.getenv('WHATSAPP_BUSINESS_NUMBER', '3117195100').strip()
 CONTACT_MAP_QUERY = os.getenv(
