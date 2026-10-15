@@ -25,11 +25,11 @@ services:
       - key: USE_CLOUDINARY
         value: True
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        sync: dysab8vmt
       - key: CLOUDINARY_API_KEY
-        sync: false
+        sync: 958154342679485
       - key: CLOUDINARY_API_SECRET
-        sync: false
+        sync: IuL_aYBECWk_yBmiIaHbMNc3WA8
       - key: WHATSAPP_BUSINESS_NUMBER
         value: 3117195100
       - key: CONTACT_MAP_QUERY

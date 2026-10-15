@@ -69,7 +69,8 @@ class Command(BaseCommand):
         if not dry_run:
             try:
                 import cloudinary.api
-                cloudinary.api.usage()
+                # cloudinary.api.usage()  # Saltado: API key puede ser upload-only
+                cloudinary.api.ping()  # Verificación ligera
             except Exception as e:
                 self.stderr.write(self.style.ERROR(
                     'No se pudo conectar con Cloudinary. Revisa cloud name, '
