@@ -7,6 +7,21 @@ DEFAULT_LOCATION = 'JJ Construmadera S.A.S, Cl 22 #30b1, Montería, Córdoba'
 DEFAULT_LOCATION_SHORT = 'Montería, Córdoba'
 
 
+def static_version(request):
+    """Versión anti-caché para CSS/JS según fecha de modificación.
+
+    En desarrollo las URLs de static no llevan hash, así que el navegador
+    reutilizaba archivos viejos. Con ?v=<mtime> cada cambio genera una URL
+    nueva. En producción manda el hash del manifest; el query es inocuo.
+    """
+    try:
+        css_mtime = int((settings.BASE_DIR / 'static' / 'css' / 'styles.css').stat().st_mtime)
+        js_mtime = int((settings.BASE_DIR / 'static' / 'js' / 'main.js').stat().st_mtime)
+    except OSError:
+        css_mtime = js_mtime = 0
+    return {'STATIC_VERSION': f'{css_mtime}-{js_mtime}'}
+
+
 def footer_contact(request):
     """Datos de contacto compartidos por el footer de todas las páginas."""
     phone = getattr(settings, 'WHATSAPP_BUSINESS_NUMBER', DEFAULT_PHONE).strip()

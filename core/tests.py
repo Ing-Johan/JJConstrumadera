@@ -75,6 +75,20 @@ class PublicPagesTests(TestCase):
         self.assertContains(response, '+57 311 719 5100')
         self.assertContains(response, 'tel:+573117195100')
 
+    def test_static_assets_have_cache_busting_version(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'styles.css?v=')
+        self.assertContains(response, 'main.js?v=')
+
+    def test_collage_rope_and_pause_have_inline_fallback_styles(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="collage-rope"')
+        self.assertContains(response, 'position:absolute')
+
     def test_nav_portfolio_blink_and_rope_styles_exist(self):
         css_path = settings.BASE_DIR / 'static' / 'css' / 'styles.css'
         css = css_path.read_text(encoding='utf-8')

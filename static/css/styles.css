@@ -28,6 +28,31 @@ body {
   overflow-x: clip;
 }
 
+/* Scrollbar delgada en los colores del sitio (progresivo, no afecta función). */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent-soft) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent-soft);
+  border-radius: 8px;
+  border: 2px solid var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
 body {
   margin: 0;
   font-family: 'Manrope', Arial, sans-serif;
@@ -244,18 +269,18 @@ p {
   border: 2px solid var(--color-accent);
   border-radius: 10px;
   padding: calc(0.75rem - 2px) calc(1rem - 2px);
-  animation: portfolioBlink 1.8s ease-in-out infinite;
+  animation: portfolioBlink 1.5s ease-in-out infinite;
 }
 
 @keyframes portfolioBlink {
   0%,
   100% {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.45);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.55);
   }
   50% {
-    border-color: rgba(217, 119, 6, 0.25);
-    box-shadow: 0 0 0 7px rgba(217, 119, 6, 0);
+    border-color: rgba(217, 119, 6, 0.15);
+    box-shadow: 0 0 0 10px rgba(217, 119, 6, 0);
   }
 }
 
