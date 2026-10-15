@@ -597,16 +597,20 @@ def home(request):
     }
 
     category_projects = {}
+    used_project_ids = set()
     for cat_name in category_order:
         project = _get_hero_project(hero_names[cat_name], cat_name)
         if project:
             category_projects[cat_name] = project
+            used_project_ids.add(project.pk)
 
     # Imágenes para el collage rotativo del hero (galería reciente, gestionable desde el CMS).
     # La más reciente ocupa la 4ª tarjeta fija; el resto alimenta la rotación.
+    # Excluir proyectos ya usados en las 3 primeras tarjetas para evitar repeticiones visuales.
     hero_gallery_images = list(
         PortfolioImage.objects.filter(project__is_active=True, image__isnull=False)
         .exclude(image='')
+        .exclude(project__in=used_project_ids)
         .select_related('project')
         .order_by('-created_at')[:12]
     )
