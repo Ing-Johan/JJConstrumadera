@@ -364,7 +364,7 @@ p {
 .menu-toggle::before {
   inset: -8px;
   background: var(--color-accent);
-  opacity: 0;
+  opacity: 0.18;
   transform: scale(0.85) rotate(-3deg);
   border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
   animation: paintStrokeBreathe 4s ease-in-out infinite;
@@ -374,7 +374,7 @@ p {
 .menu-toggle::after {
   inset: -12px;
   background: var(--color-accent-soft);
-  opacity: 0;
+  opacity: 0.12;
   transform: scale(0.7) rotate(12deg);
   border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%;
   animation: paintStrokeBreathe 4s ease-in-out infinite reverse;
@@ -384,18 +384,22 @@ p {
   0%, 100% {
     transform: scale(0.85) rotate(-3deg);
     border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
+    opacity: 0.18;
   }
   25% {
     transform: scale(0.92) rotate(1deg);
     border-radius: 55% 45% 50% 50% / 50% 50% 45% 55%;
+    opacity: 0.22;
   }
   50% {
     transform: scale(0.98) rotate(-1deg);
     border-radius: 50% 50% 45% 55% / 55% 45% 50% 50%;
+    opacity: 0.18;
   }
   75% {
     transform: scale(0.92) rotate(2deg);
     border-radius: 45% 55% 50% 50% / 50% 50% 55% 45%;
+    opacity: 0.22;
   }
 }
 
@@ -443,7 +447,7 @@ p {
   .menu-toggle::before,
   .menu-toggle::after {
     animation: none;
-    opacity: 0;
+    opacity: 0.15;
   }
 
   .menu-toggle:hover::before,
