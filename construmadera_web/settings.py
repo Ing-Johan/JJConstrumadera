@@ -92,13 +92,23 @@ if use_sqlite:
         }
     }
 elif database_url:
-    DATABASES = {
-        'default': dj_database_url.parse(
-            database_url,
-            conn_max_age=60,
-            conn_health_checks=True,
-        )
-    }
+    try:
+        DATABASES = {
+            'default': dj_database_url.parse(
+                database_url,
+                conn_max_age=60,
+                conn_health_checks=True,
+            )
+        }
+    except ValueError:
+        # Durante el build en Render, DATABASE_URL puede no ser válida aún.
+        # Usamos SQLite para collectstatic (no necesita BD real).
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 else:
     DATABASES = {
         'default': {
